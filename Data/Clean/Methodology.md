@@ -2,7 +2,7 @@
 
 ## Original Model
 
-### File 1 - variables_explicatives
+### File 1 - exogeneous_variables
 
 01.1975 to 12.2006 monthly - 384 data points
 
