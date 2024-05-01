@@ -4,13 +4,13 @@ import pandas as pd
 ################################################ DATA IMPORTATION ###############################################
 
 exog_path = r"Data\Clean\exogeneous_variables.xlsx"
-# mf_path = r"Data\Clean\tr_mutualfunds S12.csv"
+mf_path = r"Data\Clean\mutual_funds.csv"
 
 # Exogeneous variables
 exog = pd.read_excel(exog_path, index_col=('Dates'))
 
 # Mutual funds
-# mf = pd.read_csv(mf_path)
+mf = pd.read_csv(mf_path, dtype={'cusip': str})
 
 ################################################ DATA PROCESSING ###############################################
 
