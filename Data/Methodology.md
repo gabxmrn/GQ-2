@@ -26,7 +26,7 @@ mom :
 
 1M_Tbill :
     Used the CSRP US Treasuries and Inflation Indexes 30 days yield
-    Differnt from the risk free rate (computed by calculating the return of the bill value, it is not a rate)
+    Different from the risk free rate (computed by calculating the return of the bill value, it is not a rate)
 
 div_yield_mkt :
     03.1980 to 12.2006 : income return of NYSE/AMEX market value weighted portfolio (Mrkt portfolio in %)
