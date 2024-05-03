@@ -5,110 +5,119 @@ import statsmodels.api as sm
 import warnings
 warnings.filterwarnings('ignore') # Suppresses warnings to avoid cluttering the output.
 
-from data import factor, predictive, mutual_fund
+from data import factor, predictive, mutual_fund, weighted_portfolio
 
-#########################################################################
-### Filtrage commun des dates pour tous 
-# common_dates = set(exogeneous_variables.index) 
-# for name, group in mutual_fund.groupby('fundname'):
-#         common_dates.intersection(set(group.index))
-# common_dates = sorted(list(common_dates))
-# factor = factor.loc[common_dates]
-# mutual_fund = mutual_fund[mutual_fund.index.isin(common_dates)]
-#########################################################################
-
-
-######################################################### FOUR FACTOR MODEL #########################################################
-
-def four_factor_model(exog:pd.DataFrame, endog:pd.DataFrame) :
-        """
-                Four factor model proposed by Carhart (1997)
-                Perform linear regression of mutual fund returns on risk factors.
-        """
-        
-        results = {}
-        nb_funds = 1 # Counter for the number of funds processed
-        
-        for name, fund in endog.groupby('fundname'):
-                common_dates = set(exog.index).intersection(set(fund.index))
-                common_dates = pd.Index(sorted(list(common_dates)))
-                print(f"Number of dates for:  {name} -> {len(common_dates)}.")
-                
-                if len(common_dates) < 2 :
-                        results[name] = "Not enough data"
-                        continue
-                else :
-                        nb_funds += 1
-                
-                X_i = exog.loc[common_dates, ['mkt_ptf', 'smb', 'hml', 'mom']]  
-                X_i = sm.add_constant(X_i) # Add a constant term for the intercept (alpha)
-                y_i = fund['rdt'].loc[common_dates] - exog['rf_rate'].loc[common_dates] # Excess Returns ?????? 
-                
-                # Régression linéaire OLS
-                model = sm.OLS(y_i, X_i).fit()
-                # results = model.fit(cov_type='HAC',cov_kwds={'maxlags':1})  # Correction de Newey-West ??? 
-                results[name] = model.summary()
-
-        print(f"Number of funds considered:  {nb_funds}")
-        return results 
-
-
-################################################### CONDITIONAL FOUR FACTOR MODEL ###################################################
-
-def conditional_four_factor_model(exog: pd.DataFrame, endog: pd.DataFrame, predictive: pd.DataFrame):
+class FactorModels:
     """
-        Conditional four-factor model to account for time-varying exposure to the market porfolio (Fearson & Schadt (1996))
-        Fit a conditional four-factor model with interactions between predictive variables and factors.
+    Class for constructing factor models in financial data analysis. 
+    It supports both standard and conditional factor models using ordinary least squares (OLS).
+
+    Attributes:
+        exog (pd.DataFrame): Exogenous variables, typically factor loadings in a factor model.
+        endog (pd.DataFrame): Endogenous variable, typically the returns of a portfolio or asset.
+        predictive (pd.DataFrame, optional): Predictive variables used to modify the factor exposures conditionally, default is None.
     """
     
-    results = {}
-    for name, fund in endog.groupby('fundname'):
-        common_dates = set(exog.index).intersection(set(fund.index)).intersection(set(predictive.index))
-        common_dates = pd.Index(sorted(list(common_dates)))
-        print(f"Number of dates for:  {name} -> {len(common_dates)}.")
+    def __init__(self, exog:pd.DataFrame, endog:pd.DataFrame, predictive:pd.DataFrame=None) -> None:
+        """
+        Initializes the FactorModels class with the provided dataframes.
 
-        if len(common_dates) < 2:
-            results[name] = "Not enough data"
-            continue
+        Parameters:
+            exog (pd.DataFrame): The exogenous factors affecting the endogenous variable.
+            endog (pd.DataFrame): The endogenous variable that the model tries to explain.
+            predictive (pd.DataFrame, optional): Additional predictive variables for a conditional model.
+        """
+        self.exog = exog
+        self.endog = endog
+        self.predictive = predictive
 
-        X_i = exog.loc[common_dates, ['mkt_rf', 'smb', 'hml', 'mom']]
-        predictive_i = predictive.loc[common_dates]
+    def four_factor_model(self) :  
+        """
+        Four factor model proposed by Carhart (1997)
+        Constructs a standard four-factor model using OLS regression.
+
+        Returns:
+            pd.DataFrame: A data frame containing the coefficients and p-values of the regression model.
+        """
+        y = self.endog      
+        X = self.exog.copy()
+        X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
+        
+        model = sm.OLS(y, X).fit() # Linear Regression OLS
+        
+        return pd.DataFrame({'Coeff': model.params, 'P-value': model.pvalues})
+    
+    def conditional_four_factor_model(self):   
+        """
+        Conditional four-factor model to account for time-varying exposure to the market porfolio (Fearson & Schadt (1996))
+        Constructs a conditional four-factor model using OLS regression, where the factor loadings are adjusted by predictive variables.
+
+        Raises:
+            Exception: If predictive variables are not set when calling this method.
+
+        Returns:
+            pd.DataFrame: A data frame containing the coefficients and p-values of the regression model.
+        """
+        if self.predictive is None :
+            raise("Select predictives variables for conditional factor model")  
+        
+        y = self.endog  
+        X = self.exog.copy()
         
         # Add interaction terms to X_i : 
-        for column in predictive_i.columns:
-            for factor in ['mkt_rf', 'smb', 'hml', 'mom']:
-                X_i[f"{column}_{factor}"] = predictive_i[column] * X_i[factor]
+        for column in self.predictive.columns:
+            for factor in self.exog.columns:
+                X[f"{column}_{factor}"] = self.predictive[column] * X[factor]
         
-        X_i = sm.add_constant(X_i) # Add a constant term for the intercept (alpha)
-        y_i = fund.loc[common_dates, 'rdt'] # - exog.loc[common_dates, 'rf_rate']  
-        # Excess returns ?????????????????
+        X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
         
-        # Régression linéaire OLS
-        model = sm.OLS(y_i, X_i).fit()
-        results[name] = model.summary()
-
-    return results
-
-
-
-model_1 = four_factor_model(exog=factor, endog=mutual_fund)
-model_2 = conditional_four_factor_model(exog=factor, endog=mutual_fund, predictive=predictive)
-
-print(model_1["ZWEIG TOTAL RETURN FD"])
-print(model_2["ZWEIG TOTAL RETURN FD"])
-
-
-"""
-Remarques : 
-        - J'ai convertie toute les données exogènes en trimestrielles pour que tout coincide 
-        - Je fais une regression par fonds, pour chacun d'eux je filtre les facteurs sur les dates dispo 
-        (donc les résulats des regressions pour chaque fonds ne concernent pas les mêmes dates)
-        - Pour la variable r_{t,i} (y) je suis pas sure de moi (excess return ou pas excess return)  
-                # "the month t excess return of fund i over the risk-free rate (proxied by the monthly 30-day T-bill beginning-of-month yield)" ?????  
-                En attend, modele 1 recalcule un excess return à partir du RFR, pas le modele 2 (comme ca on voit a peut pres la diff) 
-        - Pour les variables mkt_ptf et div_yield_mkt j'ai bien vu le (Mrkt portfolio in %) dans la methodo 
-                mais je sais pas comment je dois le prendre en compte dans le code 
-        - Pour le modele 2, dans les results les coeffs existent mais j'ai souvent des nan pour les autres variables (stat)
+        model = sm.OLS(y, X).fit() # Linear Regression OLS
         
-        PS : C'est long a tourner 
-"""
+        return pd.DataFrame({'Coeff': model.params, 'P-value': model.pvalues})
+
+
+# Résultats sur le portefeuille : 
+
+Portfolio_results = FactorModels(exog=factor[['mkt_rf', 'smb', 'hml', 'mom']], endog=weighted_portfolio["Excess Returns"], predictive=predictive)
+print(Portfolio_results.four_factor_model())
+print(Portfolio_results.conditional_four_factor_model())
+
+# Remarque : la je ressort tous les coeff + les p-values qui vont avec 
+
+# Résultats par fonds : 
+
+nb_funds = len(mutual_fund['fundname'].unique()) # Total number of funds 
+fund_names = np.full(nb_funds, fill_value=np.nan, dtype='object')
+fund_index = 0 # Counter for funds
+
+results = np.full((nb_funds, 5), fill_value=np.nan) 
+# Col1 = alpha model 1, Col2 = p-value model 1, Col3 = alpha model 2, Col4 = p-value model 2, Col5 = nb dates for fund
+
+for name, fund in mutual_fund.groupby('fundname'):
+    # Dates management : 
+    common_dates = set(factor.index).intersection(set(fund.index)).intersection(set(predictive.index))
+    common_dates = pd.Index(sorted(list(common_dates)))
+
+    factor_models = FactorModels(exog = factor.loc[common_dates, ['mkt_rf', 'smb', 'hml', 'mom']], 
+                                 endog = fund.loc[common_dates, 'rdt'] - factor.loc[common_dates, 'rf_rate'] , 
+                                 predictive = predictive.loc[common_dates])
+
+    # OLS : 
+    results_model_1 = factor_models.four_factor_model()
+    results_model_2 = factor_models.conditional_four_factor_model()
+    
+    # Résults : 
+    fund_names[fund_index] = name
+    results[fund_index, 4] = len(common_dates)
+    results[fund_index, 0] = results_model_1.loc['const', 'Coeff']
+    results[fund_index, 1] = results_model_1.loc['const', 'P-value']
+    results[fund_index, 2] = results_model_2.loc['const', 'Coeff']
+    results[fund_index, 3] = results_model_2.loc['const', 'P-value']
+    fund_index += 1
+
+full_results = pd.DataFrame(results, index=fund_names, columns = ["alpha 1", "p-value 1", "alpha 2", "p-value 2","number of data"])
+print(results)
+
+# Remarque : la je me concentre que sur alpha + pvalue (pour les deux modèles)
+    
+    

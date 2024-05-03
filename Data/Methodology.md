@@ -42,4 +42,4 @@ default_spread :
 
 ### File 2 - variables_expliquées
 
-01.1975 to 12.2006 monthly
+01.1975 to 12.2006 quarterly
