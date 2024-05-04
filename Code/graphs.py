@@ -30,21 +30,21 @@ for name, fund in mutual_fund.groupby('fundname'):
                                  endog = fund.loc[common_dates, 'rdt'] - factor.loc[common_dates, 'rf_rate'] , 
                                  predictive = predictive.loc[common_dates])
     four_factor = factor_models.four_factor_model()
-    conditional_four_factor = factor_models.conditional_four_factor_model()
+    # conditional_four_factor = factor_models.conditional_four_factor_model()
     
     # Résults : 
     fund_names[fund_index] = name
     results[fund_index, 0] = four_factor.params['const']
     results[fund_index, 1] = four_factor.tvalues[0]
-    results[fund_index, 2] = conditional_four_factor.params['const']
-    results[fund_index, 3] = conditional_four_factor.tvalues[0]
+    # results[fund_index, 2] = conditional_four_factor.params['const']
+    # results[fund_index, 3] = conditional_four_factor.tvalues[0]
     fund_index += 1
 
 full_results = pd.DataFrame(results, index=fund_names, columns = ['alpha 1', 't-stat 1', 'alpha 2', 't-stat 2'])
 
 # Create categories based on 'alpha'
 full_results['Category 1'] = np.where(full_results['alpha 1'] > 1, 'pos', np.where(full_results['alpha 1'] < -1, 'neg', 'zero'))
-full_results['Category 2'] = np.where(full_results['alpha 2'] > 1, 'pos', np.where(full_results['alpha 1'] < -1, 'neg', 'zero'))
+# full_results['Category 2'] = np.where(full_results['alpha 2'] > 1, 'pos', np.where(full_results['alpha 1'] < -1, 'neg', 'zero'))
 
 
 ##############################################################################################################################
@@ -59,16 +59,15 @@ def tstat_graph(data:pd.DataFrame, tstat:str) :
     kde_fill = kde.get_lines()[-1]
     # Fill the area between
     plt.fill_between(kde_fill.get_xdata(), kde_fill.get_ydata(), 
-                     where=(kde_fill.get_xdata() < -1.65) | (kde_fill.get_xdata() > 1.65), color="red", alpha=0.5)
+                     where=(kde_fill.get_xdata() < -1.65) | (kde_fill.get_xdata() > 1.65), color="lightgray", alpha=0.5)
     
-    # sns.kdeplot(data[tstat], label="t-stat", color="blue")
     plt.title("Density of t-statistics")
     plt.xlabel("t-statistic")
     plt.ylabel("Density")
     plt.legend()
     plt.show()
 
-# tstat_graph(full_results, "t-stat 1") # four factor model (comme dans l'article)
+tstat_graph(full_results, "t-stat 1") # four factor model (comme dans l'article)
 # tstat_graph(full_results, "t-stat 2") # conditionnal four factor model (nul)
 
 ##############################################################################################################################
@@ -107,7 +106,7 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     plt.legend()
     plt.show()
 
-# tstat_graph_by_category(full_results, "t-stat 1", "Category 1")
+tstat_graph_by_category(full_results, "t-stat 1", "Category 1")
 # tstat_graph_by_category(full_results, "t-stat 2", "Category 2")   
 
 ##############################################################################################################################
@@ -119,6 +118,7 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
 np.random.seed(0) 
 
 # Parameters
+#### Paramétrer les proportions sur les 5 dernières années du sample 
 sample_size = 8525  # Number of funds 
 counts = full_results['Category 1'].value_counts()
 proportions = counts / counts.sum() # Proportion of each categories of alpha

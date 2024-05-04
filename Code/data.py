@@ -12,6 +12,10 @@ from stationnarization import Stationnarity_Test
         and endogeneous variables (mutual funds data). 
 """
 
+# Period selection : 
+startdate = "1980-03"
+enddate = "2006-12"
+
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
 exogeneous_variables.index = pd.to_datetime(exogeneous_variables.index) 
@@ -20,11 +24,11 @@ exogeneous_variables.dropna(inplace=True)
 exogeneous_variables.index = exogeneous_variables.index.strftime('%Y-%m') 
 
 # Factor variables for both factor models (Carhart &  Ferson/Schadt)
-factor = exogeneous_variables.loc[:, ['rf_rate', 'mkt_ptf', 'smb', 'hml', 'mom']] 
+factor = exogeneous_variables.loc[startdate:enddate, ['rf_rate', 'mkt_ptf', 'smb', 'hml', 'mom']] 
 factor['mkt_rf'] = factor['mkt_ptf'] - factor['rf_rate'] # Excess returns over risk free rate ????? 
 
 # Predictive variables of the conditionnal 4 factors model :
-predictive = exogeneous_variables.loc[:, ['1M_Tbill_yield', 'div_yield_mkt_ptf', 'term_spread', 'default_spread']]
+predictive = exogeneous_variables.loc[startdate:enddate, ['1M_Tbill_yield', 'div_yield_mkt_ptf', 'term_spread', 'default_spread']]
 for column in predictive.columns:
         predictive[column] -= predictive[column].mean() # value at end of month t - mean on the period
 predictive = predictive.shift(1)  # Data shift to represent z_{t-1}
@@ -34,20 +38,16 @@ predictive.dropna(inplace=True)
 common_dates = pd.Index(sorted(set(factor.index).intersection(set(predictive.index))))
 factor = factor.loc[common_dates, :]
 
-# 107 dates dans les variables exogènes. 
-
 # Mutual funds data
 mutual_fund = pd.read_csv("Data/mutual_funds.csv", dtype={'cusip': str})
 mutual_fund['fdate'] = pd.to_datetime(mutual_fund['fdate'])
 mutual_fund['fdate'] = mutual_fund['fdate'].apply(lambda x: x.strftime('%Y-%m'))
-mutual_fund = mutual_fund[mutual_fund['fdate'].isin(common_dates)] # Sames dates as exogeneous variables (107)
+mutual_fund = mutual_fund[mutual_fund['fdate'].isin(common_dates)] # Sames dates as exogeneous variables
 mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
 mutual_fund.dropna(inplace=True)
 mutual_fund = mutual_fund.sort_values(by=['fundname', 'fdate'])
 mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x['rdt'].notnull().rolling(window=20).count().max() >= 20)
-
-# print(f" nombre de fonds : {len(mutual_fund['fundname'].unique())}.") # 8525
-# print(f" nombre de dates : {len(mutual_fund['fdate'].unique())}.") # toujours 107
+# print(len(mutual_fund["fdate"].unique()))
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 
@@ -72,7 +72,6 @@ Stationnarity_Test_fund = Stationnarity_Test(mutual_fund, 10, 0.05)
 # Non-stationnary -> none 
 # print(Stationnarity_Test_fund.get_results())
 
-# 106 dates après stationnarisation
 
 # ######################################################### PORTFOLIO CREATION ########################################################
 
@@ -88,7 +87,7 @@ weighted_portfolio["Nb funds"] = nb_funds_per_dates
 
 # ########################################################## DATES MANAGEMENT #########################################################
 
-common_dates = pd.Index(sorted(set(weighted_portfolio.index).intersection(set(factor.index)).intersection(set(predictive.index)))) # 106
+common_dates = pd.Index(sorted(set(weighted_portfolio.index).intersection(set(factor.index)).intersection(set(predictive.index))))
 weighted_portfolio = weighted_portfolio.loc[common_dates, :]
 factor = factor.loc[common_dates, :]
 predictive = predictive.loc[common_dates, :]

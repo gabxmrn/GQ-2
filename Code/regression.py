@@ -14,9 +14,10 @@ class FactorModels:
         exog (pd.DataFrame): Exogenous variables, typically factor loadings in a factor model.
         endog (pd.DataFrame): Endogenous variable, typically the returns of a portfolio or asset.
         predictive (pd.DataFrame, optional): Predictive variables used to modify the factor exposures conditionally, default is None.
+        risk_free_rate (pd.DataFrame, optional): Risk Free Rate to compute Excess returns of fund, default is None. 
     """
     
-    def __init__(self, exog:pd.DataFrame, endog:pd.DataFrame, predictive:pd.DataFrame=None) -> None:
+    def __init__(self, exog:pd.DataFrame, endog:pd.DataFrame, predictive:pd.DataFrame=None, risk_free_rate:pd.DataFrame=None) -> None:
         """
         Initializes the FactorModels class with the provided dataframes.
 
@@ -24,6 +25,7 @@ class FactorModels:
             exog (pd.DataFrame): The exogenous factors affecting the endogenous variable.
             endog (pd.DataFrame): The endogenous variable that the model tries to explain.
             predictive (pd.DataFrame, optional): Additional predictive variables for a conditional model.
+            risk_free_rate (pd.DataFrame, optional): Risk Free Rate to compute Excess returns of fund. 
         """
         self.exog = exog
         self.endog = endog
@@ -34,7 +36,8 @@ class FactorModels:
         Four factor model proposed by Carhart (1997)
         Constructs a standard four-factor model using OLS regression.
         """
-        y = self.endog      
+        
+        y = self.endog
         X = self.exog.copy()
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
 
@@ -51,9 +54,9 @@ class FactorModels:
         if self.predictive is None :
             raise("Select predictives variables for conditional factor model")  
         
-        y = self.endog  
+        y = self.endog
         X = self.exog.copy()
-        
+    
         # Add interaction terms to X_i : 
         for column in self.predictive.columns:
             for factor in self.exog.columns:
@@ -62,5 +65,8 @@ class FactorModels:
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
 
         return sm.OLS(y, X).fit() # Linear Regression OLS
+    
+    
+    
     
     
