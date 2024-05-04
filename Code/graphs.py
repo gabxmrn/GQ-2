@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy.stats as stats
 
 from data import factor, predictive, mutual_fund
 from regression import FactorModels
@@ -9,6 +10,7 @@ from regression import FactorModels
 """
     - Regression sur tous les fonds 
     - Graphique des t-stats 
+    - Histogramme des p-values 
 """
 
 nb_funds = len(mutual_fund['fundname'].unique()) # Total number of funds 
@@ -105,7 +107,38 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     plt.legend()
     plt.show()
 
-tstat_graph_by_category(full_results, "t-stat 1", "Category 1")
+# tstat_graph_by_category(full_results, "t-stat 1", "Category 1")
 # tstat_graph_by_category(full_results, "t-stat 2", "Category 2")   
+
+##############################################################################################################################
+
+
+##############################################################################################################################
+### Graphiques 3 : Histogramme des p-values
+
+np.random.seed(0) 
+
+# Parameters
+sample_size = 8525  # Number of funds 
+counts = full_results['Category 1'].value_counts()
+proportions = counts / counts.sum() # Proportion of each categories of alpha
+means = [0, -2.5, 3] 
+std_dev = 1 
+
+t_stats = np.concatenate([
+    np.random.normal(mean, std_dev, int(sample_size * proportion))
+    for mean, proportion in zip(means, proportions)
+])
+
+p_values = 2 * (1 - stats.norm.cdf(np.abs(t_stats)))
+
+counts, bins = np.histogram(p_values, bins=10, range=(0, 1), density=True)
+counts = counts / 10  # Mise à l'échelle
+plt.bar(bins[:-1], counts, width=np.diff(bins), color='gray', edgecolor='black')
+plt.xlabel('p-value')
+plt.ylabel('Density')
+plt.ylim(0, 0.4)  # Ajuster l'échelle
+plt.title('Density Histogram of p-values')
+plt.show()
 
 ##############################################################################################################################
