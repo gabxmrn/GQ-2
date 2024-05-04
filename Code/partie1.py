@@ -39,11 +39,11 @@ for name, fund in mutual_fund.groupby('fundname'):
     fund_index += 1
 
 full_results = pd.DataFrame(results, index=fund_names, columns = ['alpha 1', 't-stat 1', 'alpha 2', 't-stat 2'])
-print(full_results.head(30))
 
 # Create categories based on 'alpha'
 full_results['Category 1'] = np.where(full_results['alpha 1'] > 1, 'pos', np.where(full_results['alpha 1'] < -1, 'neg', 'zero'))
 full_results['Category 2'] = np.where(full_results['alpha 2'] > 1, 'pos', np.where(full_results['alpha 1'] < -1, 'neg', 'zero'))
+
 
 ##############################################################################################################################
 ### Graphiques 1 : transversale (tous les fonds quel que soit leur alpha) pour le modèle simple à 4 facteurs 
@@ -83,43 +83,22 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     # KDE plot for 'Négatif'
     negative_values = data[data[category] == 'neg'][tstat]
     negative_norm = (negative_values - negative_values.mean()) / negative_values.std()
-    sns.kdeplot(negative_norm + categories['neg'], label="Unskilled funds", color="blue")
+    sns.kdeplot(negative_norm + categories['neg'], label="Unskilled funds", color="tomato")
     
     # KDE plot for 'Null'
     null_values = data[data[category] == 'zero'][tstat]
     null_norm = (null_values - null_values.mean()) / null_values.std()
-    kde_null = sns.kdeplot(null_norm + categories['zero'], label="Zero-alpha funds", color="red")
+    kde_null = sns.kdeplot(null_norm + categories['zero'], label="Zero-alpha funds", color="slategrey")
     kde_null_fill = kde_null.get_lines()[-1]
-    kde_null_fill.set_color("gray")
-    plt.fill_between(kde_null_fill.get_xdata(), kde_null_fill.get_ydata(), where=(kde_null_fill.get_xdata() < -1.65) | (kde_null_fill.get_xdata() > 1.65), color="red", alpha=0.5)
+    # kde_null_fill.set_color("lightgray")
+    plt.fill_between(kde_null_fill.get_xdata(), kde_null_fill.get_ydata(), 
+                     where=(kde_null_fill.get_xdata() < -1.65) | (kde_null_fill.get_xdata() > 1.65), color="lightgray", alpha=0.5)
     
     # KDE plot for 'Positif'
     positive_values = data[data[category] == 'pos'][tstat]
     positive_norm = (positive_values - positive_values.mean()) / positive_values.std()
-    sns.kdeplot(positive_norm + categories['pos'], label="Skilled funds", color="green")
+    sns.kdeplot(positive_norm + categories['pos'], label="Skilled funds", color="royalblue")
     
-    plt.title("Density of t-statistics by alpha categories")
-    plt.xlabel("t-statistic")
-    plt.ylabel("Density")
-    plt.legend()
-    plt.show()
-
-
-
-def tstat_graph_by_category_old(data: pd.DataFrame, tstat: str, category: str):
-    plt.figure(figsize=(10, 5))
-    
-    # KDE plot for 'Négatif'
-    sns.kdeplot(data[data[category] == 'neg'][tstat] - 2.5, label="Unskilled funds", color="blue")
-    # KDE plot for 'Null'
-    kde_null = sns.kdeplot(data[data[category] == 'zero'][tstat], label="Zero-alpha funds", color="red")
-    kde_null_fill = kde_null.get_lines()[-1]
-    kde_null_fill.set_color("gray")
-    plt.fill_between(kde_null_fill.get_xdata(), kde_null_fill.get_ydata(), 
-                     where=(kde_null_fill.get_xdata() < -1.65) | (kde_null_fill.get_xdata() > 1.65), color="gray", alpha=0.5)
-    # KDE plot for 'Positif'
-    sns.kdeplot(data[data[category] == 'pos'][tstat] + 3, label="Skilled funds", color="green")
-
     plt.title("Density of t-statistics by alpha categories")
     plt.xlabel("t-statistic")
     plt.ylabel("Density")
@@ -127,4 +106,6 @@ def tstat_graph_by_category_old(data: pd.DataFrame, tstat: str, category: str):
     plt.show()
 
 tstat_graph_by_category(full_results, "t-stat 1", "Category 1")
-# tstat_graph_by_category(full_results, "t-stat 2", "Category 2")
+# tstat_graph_by_category(full_results, "t-stat 2", "Category 2")   
+
+##############################################################################################################################
