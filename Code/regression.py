@@ -33,17 +33,12 @@ class FactorModels:
         """
         Four factor model proposed by Carhart (1997)
         Constructs a standard four-factor model using OLS regression.
-
-        Returns:
-            pd.DataFrame: A data frame containing the coefficients and p-values of the regression model.
         """
         y = self.endog      
         X = self.exog.copy()
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
-        
-        model = sm.OLS(y, X).fit() # Linear Regression OLS
-        
-        return pd.DataFrame({'Coeff': model.params, 'P-value': model.pvalues})
+
+        return sm.OLS(y, X).fit() # Linear Regression OLS
     
     def conditional_four_factor_model(self):   
         """
@@ -52,9 +47,6 @@ class FactorModels:
 
         Raises:
             Exception: If predictive variables are not set when calling this method.
-
-        Returns:
-            pd.DataFrame: A data frame containing the coefficients and p-values of the regression model.
         """
         if self.predictive is None :
             raise("Select predictives variables for conditional factor model")  
@@ -66,11 +58,9 @@ class FactorModels:
         for column in self.predictive.columns:
             for factor in self.exog.columns:
                 X[f"{column}_{factor}"] = self.predictive[column] * X[factor]
-        
+                
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
-        
-        model = sm.OLS(y, X).fit() # Linear Regression OLS
-        
-        return pd.DataFrame({'Coeff': model.params, 'P-value': model.pvalues})
+
+        return sm.OLS(y, X).fit() # Linear Regression OLS
     
     
