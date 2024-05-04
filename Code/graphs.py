@@ -55,7 +55,7 @@ def tstat_graph(data:pd.DataFrame, tstat:str) :
     
     # KDE plot
     data_norm = (data[tstat] - data[tstat].mean()) / data[tstat].std()
-    kde = sns.kdeplot(data_norm, label="t-stat", color="blue")
+    kde = sns.kdeplot(data_norm, label="t-stat", color="slategrey")
     kde_fill = kde.get_lines()[-1]
     # Fill the area between
     plt.fill_between(kde_fill.get_xdata(), kde_fill.get_ydata(), 
