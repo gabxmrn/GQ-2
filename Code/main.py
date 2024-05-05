@@ -57,6 +57,8 @@ print(test_proportion)
 """
 1) Selection des dates : OK
 2) Vecteur des p-values : OK
-3) Test FDR : OK (résultats bizarres ? on a un truc infini)
-4) Tester les graphs : OK (aucun changement avec nouveau momentum)
+3) Test FDR : OK (résultats bizarres ? on a un truc infini) -> j'ai check tout ça et effectvement bizarre, mais je pense que c'est 
+pcq il doit y avoir un division par 0. J'ai modifié pour gérer des cas, et maintenant on a 0 au lieu de inf (est-ce que le résultat fait sens??)
+4) Tester les graphs : OK (aucun changement avec nouveau momentum) --> rajout d'une classe Graphs où on pourra rajouter dees choses au fur et à mesure :)
+
 """

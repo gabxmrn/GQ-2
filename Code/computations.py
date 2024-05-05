@@ -1,36 +1,36 @@
 import numpy as np
 
-
 def computationfdr(pvec, pnul, threshold):
     """
-    Calculate the false discovery rate (FDR) for positive and negative test results.
-    
+    Calculate the false discovery rate (FDR) for positive and negative test results,
+    handling cases where no p-values fall below the threshold gracefully by returning None or zero.
+
     Parameters:
         pvec (numpy.ndarray): An array of p-values.
         pnul (float): The proportion of null hypothesis.
         threshold (float): The threshold for p-value rejection.
-    
+
     Returns:
         tuple: Contains three floats representing the overall FDR, FDR for negative side, 
-               and FDR for positive side.
+               and FDR for positive side. Returns None or zero where calculation is not possible.
     """
-
     n = len(pvec)
-    pr = np.sum(pvec < threshold) / n
-    fdr = pnul * threshold / pr
-    signpvec = np.where(pvec >= 0, 1, -1)
+    pr = np.sum(pvec < threshold) / n if n > 0 else 0  # Proportion of p-values below the threshold
+    fdr = pnul * threshold / pr if pr > 0 else 0  # Avoid division by zero by checking pr
 
-    # computation of the fdr negative side
+    signpvec = np.sign(pvec)
+
+    # Compute for the negative side
     selecn = np.where(signpvec < 0)
     pvecneg = pvec[selecn]
-    prn = np.sum(pvecneg < threshold) / n
-    fdrneg = (pnul * threshold / 2) / prn
+    prn = np.sum(pvecneg < threshold) / n if n > 0 else 0
+    fdrneg = (pnul * threshold / 2) / prn if prn > 0 else 0  
 
-    # computation of the fdr positive side
+    # Compute for the positive side
     selecp = np.where(signpvec > 0)
     pvecpos = pvec[selecp]
-    prp = np.sum(pvecpos < threshold) / n
-    fdrpos = (pnul * threshold / 2) / prp
+    prp = np.sum(pvecpos < threshold) / n if n > 0 else 0
+    fdrpos = (pnul * threshold / 2) / prp if prp > 0 else 0  
 
     return fdr, fdrneg, fdrpos
 

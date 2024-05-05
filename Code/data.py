@@ -19,7 +19,7 @@ enddate = "2006-12"
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
 exogeneous_variables.index = pd.to_datetime(exogeneous_variables.index)
-exogeneous_variables = exogeneous_variables.resample('Q').mean() # Resample data to quarterly to match funds data
+exogeneous_variables = exogeneous_variables.resample('QE').mean() # Resample data to quarterly to match funds data
 exogeneous_variables.dropna(inplace=True)
 exogeneous_variables.index = exogeneous_variables.index.strftime('%Y-%m') 
 
