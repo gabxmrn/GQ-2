@@ -39,15 +39,15 @@ common_dates = pd.Index(sorted(set(factor.index).intersection(set(predictive.ind
 factor = factor.loc[common_dates, :]
 
 # Mutual funds data
-mutual_fund = pd.read_csv("Data/mutual_funds.csv", dtype={'cusip': str})
+mutual_fund = pd.read_csv("Data/mutual_funds_1980_2006.csv")
 mutual_fund['fdate'] = pd.to_datetime(mutual_fund['fdate'])
 mutual_fund['fdate'] = mutual_fund['fdate'].apply(lambda x: x.strftime('%Y-%m'))
 mutual_fund = mutual_fund[mutual_fund['fdate'].isin(common_dates)] # Sames dates as exogeneous variables
 mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
 mutual_fund.dropna(inplace=True)
 mutual_fund = mutual_fund.sort_values(by=['fundname', 'fdate'])
-mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x['rdt'].notnull().rolling(window=20).count().max() >= 20)
-# print(len(mutual_fund["fdate"].unique()))
+mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x['return'].notnull().rolling(window=20).count().max() >= 10)
+print(len(mutual_fund["fundname"].unique()))
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 
@@ -75,7 +75,7 @@ Stationnarity_Test_fund = Stationnarity_Test(mutual_fund, 10, 0.05)
 
 # ######################################################### PORTFOLIO CREATION ########################################################
 
-mutual_fund_returns = mutual_fund.pivot_table(index='fundname', columns='fdate', values='rdt', aggfunc='first')
+mutual_fund_returns = mutual_fund.pivot_table(index='fundname', columns='fdate', values='return', aggfunc='first')
 mutual_fund.set_index('fdate', drop=True, inplace=True)
 
 nb_funds_per_dates = mutual_fund_returns.notnull().sum()
