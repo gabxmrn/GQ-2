@@ -47,7 +47,7 @@ mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
 mutual_fund.dropna(inplace=True)
 mutual_fund = mutual_fund.sort_values(by=['fundname', 'fdate'])
 mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x['return'].notnull().rolling(window=20).count().max() >= 10)
-print(len(mutual_fund["fundname"].unique()))
+# print(len(mutual_fund["fundname"].unique()))
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 
