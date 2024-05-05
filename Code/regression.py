@@ -17,15 +17,14 @@ class FactorModels:
         risk_free_rate (pd.DataFrame, optional): Risk Free Rate to compute Excess returns of fund, default is None. 
     """
     
-    def __init__(self, exog:pd.DataFrame, endog:pd.DataFrame, predictive:pd.DataFrame=None, risk_free_rate:pd.DataFrame=None) -> None:
+    def __init__(self, exog:pd.DataFrame, endog:pd.DataFrame, predictive:pd.DataFrame=None) -> None:
         """
         Initializes the FactorModels class with the provided dataframes.
 
         Parameters:
             exog (pd.DataFrame): The exogenous factors affecting the endogenous variable.
             endog (pd.DataFrame): The endogenous variable that the model tries to explain.
-            predictive (pd.DataFrame, optional): Additional predictive variables for a conditional model.
-            risk_free_rate (pd.DataFrame, optional): Risk Free Rate to compute Excess returns of fund. 
+            predictive (pd.DataFrame, optional): Additional predictive variables for a conditional model. 
         """
         self.exog = exog
         self.endog = endog
@@ -41,7 +40,7 @@ class FactorModels:
         X = self.exog.copy()
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
 
-        return sm.OLS(y, X).fit() # Linear Regression OLS
+        return sm.OLS(y, X).fit(cov_type='HAC',cov_kwds={'maxlags':1}) # Linear Regression OLS
     
     def conditional_four_factor_model(self):   
         """
@@ -64,7 +63,7 @@ class FactorModels:
                 
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
 
-        return sm.OLS(y, X).fit() # Linear Regression OLS
+        return sm.OLS(y, X).fit(cov_type='HAC',cov_kwds={'maxlags':1}) # Linear Regression OLS
     
     
     

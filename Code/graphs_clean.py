@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as stats
 
-from data import factor, predictive, mutual_fund
+from data import factor, predictive, mutual_fund, FUND_RETURN
 from regression import FactorModels
 
 class Graphs:
@@ -30,7 +30,7 @@ class Graphs:
         Parameters:
             factor (pd.DataFrame): DataFrame containing factor returns with required columns like 'mkt_rf', 'smb', 'hml', 'mom'.
             predictive (pd.DataFrame): DataFrame containing predictive variables.
-            mutual_fund (pd.DataFrame): DataFrame containing mutual fund data with columns 'fundname' and 'rdt'.
+            mutual_fund (pd.DataFrame): DataFrame containing mutual fund data with columns 'fundname' and 'return'.
         """
 
         self.factor = factor
@@ -55,7 +55,7 @@ class Graphs:
             common_dates = set(self.factor.index).intersection(set(fund.index)).intersection(set(self.predictive.index))
             common_dates = pd.Index(sorted(list(common_dates)))
             factor_models = FactorModels(exog=self.factor.loc[common_dates, ['mkt_rf', 'smb', 'hml', 'mom']], 
-                                         endog=fund.loc[common_dates, 'rdt'] - self.factor.loc[common_dates, 'rf_rate'], 
+                                         endog=fund.loc[common_dates, FUND_RETURN] - self.factor.loc[common_dates, 'rf_rate'], 
                                          predictive=self.predictive.loc[common_dates])
             four_factor = factor_models.four_factor_model()
             fund_names[fund_index] = name
@@ -100,14 +100,21 @@ class Graphs:
         for key in categories:
             values = self.full_results[self.full_results[category] == key][tstat]
             norm = (values - values.mean()) / values.std()
-            sns.kdeplot(norm + categories[key], label=f"{key.capitalize()} funds", color="tomato" if key == 'neg' else "slategrey" if key == 'zero' else "royalblue")
+            legend = "Unskilled Funds" if key == 'neg' else "Skilled Funds" if key == "pos" else "Zero-alpha Funds"
+            kde = sns.kdeplot(norm + categories[key], label=legend, color="tomato" if key == 'neg' else "slategrey" if key == 'zero' else "royalblue")
+            # f"{key.capitalize()} funds"
+            if key== 'zero' :
+                zero_fill = kde.get_lines()[-1]        
+                plt.fill_between(zero_fill.get_xdata(), zero_fill.get_ydata(), 
+                     where=(zero_fill.get_xdata() < -1.65) | (zero_fill.get_xdata() > 1.65), color="lightgray", alpha=0.5)
+        
         plt.title("Density of t-statistics by alpha categories")
         plt.xlabel("t-statistic")
         plt.ylabel("Density")
         plt.legend()
         plt.show()
 
-    def pvalue_histogram(self, proportions, means, std_dev, sample_size=8525):
+    def pvalue_histogram(self, proportions, means, std_dev, sample_size=4320):
         np.random.seed(0)
         t_stats = np.concatenate([
             np.random.normal(mean, std_dev, int(sample_size * proportion))

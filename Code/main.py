@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from data import factor, predictive, mutual_fund, weighted_portfolio
+from data import factor, predictive, mutual_fund, weighted_portfolio, FUND_RETURN
 from regression import FactorModels
 from computations import computationfdr, computationproportions
 
@@ -31,7 +31,7 @@ for name, fund in mutual_fund.groupby('fundname'):
 
     # OLS : 
     factor_models = FactorModels(exog = factor.loc[common_dates, ['mkt_rf', 'smb', 'hml', 'mom']], 
-                                 endog = fund.loc[common_dates, 'return'] - factor.loc[common_dates, 'rf_rate'] , 
+                                 endog = fund.loc[common_dates, FUND_RETURN] - factor.loc[common_dates, 'rf_rate'] , 
                                  predictive = predictive.loc[common_dates])
     four_factor = factor_models.four_factor_model()
     # conditional_four_factor = factor_models.conditional_four_factor_model()
@@ -48,7 +48,7 @@ for name, fund in mutual_fund.groupby('fundname'):
 
 # TEST FDR : 
 pval = results[:, 1]
-test_fdr = computationfdr(pvec=pval, pnul=0.75, threshold=0.05) # pnul=0.16
+test_fdr = computationfdr(pvec=pval, pnul=0.16, threshold=0.1) # pnul=0.16
 test_proportion = computationproportions(pvec=pval, nbsimul=1000)
 
 print(test_fdr)
