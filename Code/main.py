@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-
-from data import factor, predictive, mutual_fund, weighted_portfolio, FUND_RETURN
+import matplotlib.pyplot as plt
+from data import factor, predictive, mutual_fund, weighted_portfolio
 from regression import FactorModels
 from computations import computationfdr, computationproportions
 
@@ -28,10 +28,9 @@ for name, fund in mutual_fund.groupby('fundname'):
     # Dates management : 
     common_dates = set(factor.index).intersection(set(fund.index)).intersection(set(predictive.index))
     common_dates = pd.Index(sorted(list(common_dates)))
-
     # OLS : 
     factor_models = FactorModels(exog = factor.loc[common_dates, ['mkt_rf', 'smb', 'hml', 'mom']], 
-                                 endog = fund.loc[common_dates, FUND_RETURN] - factor.loc[common_dates, 'rf_rate'] , 
+                                 endog = fund.loc[common_dates, 'return'] - factor.loc[common_dates, 'rf_rate'] , 
                                  predictive = predictive.loc[common_dates])
     four_factor = factor_models.four_factor_model()
     # conditional_four_factor = factor_models.conditional_four_factor_model()
@@ -48,11 +47,12 @@ for name, fund in mutual_fund.groupby('fundname'):
 
 # TEST FDR : 
 pval = results[:, 1]
-test_fdr = computationfdr(pvec=pval, pnul=0.16, threshold=0.1) # pnul=0.16
-test_proportion = computationproportions(pvec=pval, nbsimul=1000)
+alphas = results[:,0]
+test_fdr = computationfdr(alphas=alphas, pvec=pval, pnul=0.75, threshold=0.10) # pnul=0.16
+test_proportion = computationproportions(alphas=alphas, pvec=pval, nbsimul=1000)
 
-print(test_fdr)
-print(test_proportion)
+print("Results for compute FDR", test_fdr)
+print("Results for compute proportions", test_proportion)
 
 """
 1) Selection des dates : OK

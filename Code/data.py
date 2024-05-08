@@ -14,7 +14,7 @@ from stationnarization import Stationnarity_Test
 
 # Period selection : 
 startdate = "1980-03"
-enddate = "2006-12"
+enddate = "2023-11"
 FUND_RETURN = "return"
 
 # Full Exogeneous Variables

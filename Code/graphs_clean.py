@@ -133,5 +133,4 @@ class Graphs:
 graphs = Graphs(factor, predictive, mutual_fund)
 graphs.tstat_graph("t-stat")
 graphs.tstat_graph_by_category("t-stat", "Category")
-
 graphs.pvalue_histogram(graphs.full_results['Category'].value_counts() / len(graphs.mutual_fund), [0, -2.5, 3], 1)
