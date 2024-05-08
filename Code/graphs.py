@@ -27,7 +27,7 @@ for name, fund in mutual_fund.groupby('fundname'):
 
     # OLS : 
     factor_models = FactorModels(exog = factor.loc[common_dates, ['mkt_rf', 'smb', 'hml', 'mom']], 
-                                 endog = fund.loc[common_dates, 'rdt'] - factor.loc[common_dates, 'rf_rate'] , 
+                                 endog = fund.loc[common_dates, 'return'] - factor.loc[common_dates, 'rf_rate'] , 
                                  predictive = predictive.loc[common_dates])
     four_factor = factor_models.four_factor_model()
     # conditional_four_factor = factor_models.conditional_four_factor_model()

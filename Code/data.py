@@ -15,7 +15,7 @@ from stationnarization import Stationnarity_Test
 # Period selection : 
 startdate = "1980-03"
 enddate = "2006-12"
-FUND_RETURN = "rdt"
+FUND_RETURN = "return"
 
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
@@ -40,7 +40,7 @@ common_dates = pd.Index(sorted(set(factor.index).intersection(set(predictive.ind
 factor = factor.loc[common_dates, :]
 
 # Mutual funds data
-mutual_fund = pd.read_csv("Data/mutual_funds.csv")
+mutual_fund = pd.read_csv("Data/mutual_funds_1975_2006.csv")
 # mutual_fund = pd.read_csv("Data/mutual_funds_1980_2006.csv")
 mutual_fund['fdate'] = pd.to_datetime(mutual_fund['fdate'])
 mutual_fund['fdate'] = mutual_fund['fdate'].apply(lambda x: x.strftime('%Y-%m'))
