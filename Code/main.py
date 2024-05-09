@@ -12,7 +12,7 @@ from computations import computationfdr, computationproportions
 # print(Portfolio_results.four_factor_model())
 # print(Portfolio_results.conditional_four_factor_model())
 
-# Remarque : la je ressort tous les coeff + les p-values qsui vont avec 
+# Remarque : la je ressort tous les coeff + les p-values qui vont avec 
 # LE CODE EST PLUS D'ACTUALITE AVEC LES CHANGEMENTS QUE J'AI FAIT AUJOURD'HUI
 
 ###################################################################### FDR ######################################################################

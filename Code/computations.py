@@ -78,4 +78,4 @@ def computationproportions(alphas, pvec, nbsimul):
     pneg = max(pnega - pnul * optimalR / 2, 0)
     ppos = max(pposa - pnul * optimalR / 2, 0)
 
-    return pnul, pneg, ppos, np.sum([pnul,pneg, ppos])
+    return pnul, pneg, ppos, np.sum([pnul, pneg, ppos])
