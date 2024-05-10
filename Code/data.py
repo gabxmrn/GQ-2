@@ -49,7 +49,6 @@ mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
 mutual_fund.dropna(inplace=True)
 mutual_fund = mutual_fund.sort_values(by=['fundname', 'fdate'])
 mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x[FUND_RETURN].notnull().count() >= 20)
-print(len(mutual_fund["fundname"].unique()))
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 
@@ -95,6 +94,9 @@ factor = factor.loc[common_dates, :]
 predictive = predictive.loc[common_dates, :]
 
 weighted_portfolio["Excess Returns"] = weighted_portfolio["Returns"] - factor["rf_rate"] # Excess returns over risk free rate
+
+print(f"Number of funds : {len(mutual_fund['fundname'].unique())}")
+print(f"Number of dates : {len(common_dates)}")
 
 
 # # ########################################################################################################
