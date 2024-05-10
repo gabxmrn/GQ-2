@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 from stationnarization import Stationnarity_Test
 
+FUND_RETURN = "return"
+
 
 ########################################################## DATA IMPORTATION #########################################################
 
@@ -14,8 +16,7 @@ from stationnarization import Stationnarity_Test
 
 # Period selection : 
 startdate = "1980-03"
-enddate = "2006-12"
-FUND_RETURN = "return"
+enddate = "2023-12"
 
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
@@ -49,6 +50,10 @@ mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
 mutual_fund.dropna(inplace=True)
 mutual_fund = mutual_fund.sort_values(by=['fundname', 'fdate'])
 mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x[FUND_RETURN].notnull().count() >= 20)
+mutual_fund['year'] = mutual_fund['fdate'].str[:4]
+
+last_quarter_data = mutual_fund[mutual_fund['fdate'].str.endswith('-12')]
+nb_funds_per_year = last_quarter_data.groupby(last_quarter_data['fdate'].str[:4])['fundname'].nunique()
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 
@@ -94,9 +99,6 @@ factor = factor.loc[common_dates, :]
 predictive = predictive.loc[common_dates, :]
 
 weighted_portfolio["Excess Returns"] = weighted_portfolio["Returns"] - factor["rf_rate"] # Excess returns over risk free rate
-
-print(f"Number of funds : {len(mutual_fund['fundname'].unique())}")
-print(f"Number of dates : {len(common_dates)}")
 
 
 # # ########################################################################################################
