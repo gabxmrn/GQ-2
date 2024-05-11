@@ -29,20 +29,20 @@ for name, fund in mutual_fund.groupby('fundname'):
                                  endog = fund.loc[common_dates_fund, FUND_RETURN] - factor.loc[common_dates_fund, 'rf_rate'] , 
                                  predictive = predictive.loc[common_dates_fund])
     four_factor = factor_models.four_factor_model()
-    conditional_four_factor = factor_models.conditional_four_factor_model()
+    # conditional_four_factor = factor_models.conditional_four_factor_model()
     
     # Résults : 
     fund_names[fund_index] = name
     results[fund_index, 0] = four_factor.params['const']
     results[fund_index, 1] = four_factor.pvalues['const']
-    results[fund_index, 2] = conditional_four_factor.params['const']
-    results[fund_index, 3] = conditional_four_factor.pvalues['const']
+    # results[fund_index, 2] = conditional_four_factor.params['const']
+    # results[fund_index, 3] = conditional_four_factor.pvalues['const']
     fund_index += 1
 
 full_results = pd.DataFrame(results, index=fund_names, columns = ['alpha uncondi', 't-stat uncondi', 'alpha condi', 't-stat condi'])
 # Create categories based on 'alpha'
 full_results['Category uncondi'] = np.where(full_results['alpha uncondi'] > 1, 'pos', np.where(full_results['alpha uncondi'] < -1, 'neg', 'zero'))
-full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos', np.where(full_results['alpha condi'] < -1, 'neg', 'zero'))
+# full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos', np.where(full_results['alpha condi'] < -1, 'neg', 'zero'))
 
 
 #################################################################### GRAPHS #####################################################################
@@ -52,29 +52,29 @@ tstat_graph(full_results, "t-stat uncondi")
 tstat_graph_by_category(full_results, "t-stat uncondi", "Category uncondi")
 pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
-# Conditional four factor model : 
-tstat_graph(full_results, "t-stat condi") 
-tstat_graph_by_category(full_results, "t-stat condi", "Category condi")
-pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
+# # Conditional four factor model : 
+# tstat_graph(full_results, "t-stat condi") 
+# tstat_graph_by_category(full_results, "t-stat condi", "Category condi")
+# pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
 
 ###################################################################### FDR ######################################################################
 
 pval_uncondi, alphas_uncondi = results[:, 1], results[:, 0]
-pval_condi, alphas_condi = results[:, 3], results[:, 2]   
+# pval_condi, alphas_condi = results[:, 3], results[:, 2]   
 
 test_uncondi = FDR(p_values=pval_uncondi, alphas=alphas_uncondi, gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
 fdr_uncondi = test_uncondi.compute_fdr()
 proportion_uncondi = test_uncondi.compute_proportions(nb_simul=1000)
 
-test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
-fdr_condi = test_condi.compute_fdr()
-proportion_condi = test_condi.compute_proportions(nb_simul=1000)
+# test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
+# fdr_condi = test_condi.compute_fdr()
+# proportion_condi = test_condi.compute_proportions(nb_simul=1000)
 
 print("Results for compute FDR (uncondi) : ", fdr_uncondi)
-print("Results for compute FDR (condi) : ", fdr_condi)
+# print("Results for compute FDR (condi) : ", fdr_condi)
 print("Results for compute proportions (uncondi): ", proportion_uncondi)
-print("Results for compute proportions (condi): ", proportion_condi)
+# print("Results for compute proportions (condi): ", proportion_condi)
 
 
 #################################################################### TABLEAU ####################################################################
