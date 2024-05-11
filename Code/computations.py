@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.stats import t, nct
 
 class FDR:
     """
@@ -114,3 +114,44 @@ class FDR:
         pos_prop = max(pos_prop - zero_alpha_prop * optimal_threshold / 2, 0) 
 
         return round(zero_alpha_prop, 2), round(neg_prop, 2), round(pos_prop, 2), round(np.sum([zero_alpha_prop, pos_prop, neg_prop]), 2)
+
+
+    def compute_bias(self, t_stats, T):
+        """
+        Calculate the delta(lambda) from t-statistics using noncentral t-distribution.
+
+        Parameters:
+            T (int): Number of observations (used as degrees of freedom).
+
+        Returns:
+            float: Delta(lambda) indicating misclassification probability.
+        """
+        noncentrality = np.mean(np.abs(t_stats))
+
+        lower_bound = t.ppf(self.lambda_threshold / 2, df=T-1)
+        upper_bound = t.ppf(1 - (self.lambda_threshold / 2), df=T-1)
+
+        F_nc = nct.cdf(upper_bound, df=T-1, nc=noncentrality) - nct.cdf(lower_bound, df=T-1, nc=noncentrality)
+
+        # Compute delta(lambda)
+        delta_lambda = F_nc / (1 - self.lambda_threshold)
+
+        return delta_lambda
+    
+    
+    def compute_bias_simple(self, expected_pi0):
+        """
+        Calculate the delta(lambda) from t-statistics using noncentral t-distribution.
+
+        Parameters:
+            T (int): Number of observations (used as degrees of freedom).
+
+        Returns:
+            float: Delta(lambda) indicating misclassification probability.
+        """
+        E_pi_alpha = 1 - expected_pi0
+        _, neg_prop, pos_prop, _ = self.compute_proportions(nb_simul=1000)
+        delta_lambda = ((neg_prop + pos_prop) - E_pi_alpha) / (neg_prop + pos_prop)
+ 
+        return delta_lambda
+
