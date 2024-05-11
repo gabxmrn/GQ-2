@@ -23,6 +23,7 @@ exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col
 exogeneous_variables.index = pd.to_datetime(exogeneous_variables.index)
 exogeneous_variables = exogeneous_variables.resample('QE').mean() # Resample data to quarterly to match funds data
 exogeneous_variables.dropna(inplace=True)
+exogeneous_variables.sort_index()
 exogeneous_variables.index = exogeneous_variables.index.strftime('%Y-%m') 
 
 # Factor variables for both factor models (Carhart &  Ferson/Schadt)
@@ -42,7 +43,6 @@ factor = factor.loc[common_dates, :]
 
 # Mutual funds data
 mutual_fund = pd.read_csv("Data/mutual_funds_1975_2023.csv")
-# mutual_fund = pd.read_csv("Data/mutual_funds_1980_2006.csv")
 mutual_fund['fdate'] = pd.to_datetime(mutual_fund['fdate'])
 mutual_fund['fdate'] = mutual_fund['fdate'].apply(lambda x: x.strftime('%Y-%m'))
 mutual_fund = mutual_fund[mutual_fund['fdate'].isin(common_dates)] # Sames dates as exogeneous variables
@@ -99,7 +99,6 @@ factor = factor.loc[common_dates, :]
 predictive = predictive.loc[common_dates, :]
 
 weighted_portfolio["Excess Returns"] = weighted_portfolio["Returns"] - factor["rf_rate"] # Excess returns over risk free rate
-
 
 # # ########################################################################################################
 # # fig, ax1 = plt.subplots(figsize=(12, 6))
