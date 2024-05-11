@@ -44,7 +44,7 @@ for name, fund in mutual_fund.groupby('fundname'):
 full_results = pd.DataFrame(results, index=fund_names, columns = ['alpha uncondi', 'pvalues uncondi','t-stat uncondi', 'alpha condi', 'pvalues condi', 't-stat condi'])
 # Create categories based on 'alpha'
 full_results['Category uncondi'] = np.where(full_results['alpha uncondi'] > 1, 'pos', np.where(full_results['alpha uncondi'] < -1, 'neg', 'zero'))
-full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos', np.where(full_results['alpha condi'] < -1, 'neg', 'zero'))
+# full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos', np.where(full_results['alpha condi'] < -1, 'neg', 'zero'))
 
 
 #################################################################### GRAPHS #####################################################################
@@ -69,9 +69,9 @@ test_uncondi = FDR(p_values=pval_uncondi, alphas=alphas_uncondi, gamma=0.5, lamb
 fdr_uncondi = test_uncondi.compute_fdr()
 proportion_uncondi = test_uncondi.compute_proportions(nb_simul=1000)
 
-test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
-fdr_condi = test_condi.compute_fdr()
-proportion_condi = test_condi.compute_proportions(nb_simul=1000)
+# test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
+# fdr_condi = test_condi.compute_fdr()
+# proportion_condi = test_condi.compute_proportions(nb_simul=1000)
 
 # print("Results for compute FDR (uncondi) : ", fdr_uncondi)
 # print("Results for compute FDR (condi) : ", fdr_condi)
