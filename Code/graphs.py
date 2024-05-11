@@ -3,10 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as stats
+from matplotlib.ticker import MaxNLocator
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 
 ##############################################################################################################################
-### Graphiques 1 : transversale (tous les fonds quel que soit leur alpha) pour le modèle simple à 4 facteurs 
+### Graphiques 1 : Cross-sectional t-statistic distribution
 
 def tstat_graph(data:pd.DataFrame, tstat:str) :
     plt.figure(figsize=(10, 5))
@@ -19,7 +21,7 @@ def tstat_graph(data:pd.DataFrame, tstat:str) :
     plt.fill_between(kde_fill.get_xdata(), kde_fill.get_ydata(), 
                      where=(kde_fill.get_xdata() < -1.65) | (kde_fill.get_xdata() > 1.65), color="lightgray", alpha=0.5)
     
-    plt.title("Density of t-statistics")
+    plt.title("Cross-sectional t-statistic distribution")
     plt.xlabel("t-statistic")
     plt.ylabel("Density")
     plt.legend()
@@ -28,7 +30,7 @@ def tstat_graph(data:pd.DataFrame, tstat:str) :
 ##############################################################################################################################
 
 ##############################################################################################################################
-### Graphiques 2 : 3 catégories de alpha (neg, zero, pos) 
+### Graph 2 : Individual fund t-statistics distribution
 
 def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     plt.figure(figsize=(10, 5))
@@ -53,7 +55,7 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     positive_norm = (positive_values - positive_values.mean()) / positive_values.std()
     sns.kdeplot(positive_norm + categories['pos'], label="Skilled funds", color="royalblue")
     
-    plt.title("Density of t-statistics by alpha categories")
+    plt.title("Individual fund t-statistics distribution")
     plt.xlabel("t-statistic")
     plt.ylabel("Density")
     plt.legend()
@@ -62,7 +64,7 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
 ##############################################################################################################################
 
 ##############################################################################################################################
-### Graphiques 3 : Histogramme des p-values
+### Graph 3 : Density Histogram of p-values
 
 def pvalue_histogram(proportions, means, std_dev, sample_size):
     np.random.seed(0)
@@ -79,3 +81,57 @@ def pvalue_histogram(proportions, means, std_dev, sample_size):
     plt.ylim(0, 0.4)
     plt.title('Density Histogram of p-values')
     plt.show()
+
+##############################################################################################################################
+    
+    
+##############################################################################################################################
+### Graph 4 : Proportion of unskilled & skilled funds  
+    
+def graph_proportions(proportions: pd.DataFrame):
+    fig, ax = plt.subplots(figsize=(10, 5))
+    color='black'
+    
+    # Tracé des courbes sans marqueurs et avec des styles de ligne distincts
+    ax.plot(proportions.index, proportions['zero_alpha funds'], label='Zero Alpha Funds', color=color)  # Ligne pleine
+    ax.plot(proportions.index, proportions['skilled funds'], linestyle='--', label='Skilled Funds', color=color)  # Ligne pointillée
+    ax.plot(proportions.index, proportions['unskilled funds'], linestyle='-.', label='Unskilled Funds', color=color)  # Ligne pointillée-tiretée
+    
+    # Configuration des axes et du graphique
+    ax.set_title('Proportion of unskilled & skilled funds')
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Number of Funds')
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True, prune='both', nbins=len(proportions.index)//2))
+    ax.legend()
+    
+    plt.show()
+
+##############################################################################################################################
+
+   
+##############################################################################################################################
+### Graph 5 : Total number of funds & Average alphas per years
+
+def graph_alphas(timeline: np.ndarray, alphas: np.ndarray, nb_funds: np.ndarray):
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+    
+    # Configuration de l'axe pour les alphas
+    color = 'black'  # Couleur noire pour les lignes
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Annual average alphas', color=color)
+    smoothed_alphas = lowess(alphas, timeline, frac=0.3)[:, 1]  # Smoothing the alphas
+    ax1.plot(timeline, smoothed_alphas, linestyle='--', color=color, label='Alphas') 
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True, prune='both', nbins=len(timeline)//2))
+    
+    # Configuration de l'axe secondaire pour le nombre de fonds
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Total number of Funds', color=color)
+    ax2.plot(timeline, nb_funds, linestyle='-', color=color, label='Funds') 
+    ax2.tick_params(axis='y', labelcolor=color)
+    
+    plt.title('Total number of funds & Average alphas')
+    fig.tight_layout()
+    plt.show()
+    
+##############################################################################################################################

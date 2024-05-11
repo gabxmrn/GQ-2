@@ -56,14 +56,16 @@ class FDR:
         # Compute for the negative side
         neg_p_values = self.p_values[self.alphas < 0]
         negatives_prop = np.sum(neg_p_values < self.gamma) / len(neg_p_values) if len(neg_p_values) > 0 else 0
+        # negatives_prop = np.sum(neg_p_values < self.gamma) / significant_prop if significant_prop > 0 else 0
         fdr_neg = (expected_false_positives / negatives_prop) if negatives_prop > 0 else 0
         
         # Compute for the positive side
         pos_p_values = self.p_values[self.alphas > 0]
         positives_prop = np.sum(pos_p_values < self.gamma) / len(pos_p_values) if len(pos_p_values) > 0 else 0
+        # positives_prop = np.sum(pos_p_values < self.gamma) / significant_prop if significant_prop > 0 else 0
         fdr_pos = (expected_false_positives / positives_prop) if positives_prop > 0 else 0
 
-        return round(fdr, 2), round(fdr_neg, 2), round(fdr_pos, 2)
+        return round(fdr, 4), round(fdr_neg, 4), round(fdr_pos, 4)
         
     def compute_proportions(self, nb_simul) :        
         """
@@ -113,7 +115,7 @@ class FDR:
         pos_prop = np.sum(pos_p_values < optimal_threshold) / nb_funds 
         pos_prop = max(pos_prop - zero_alpha_prop * optimal_threshold / 2, 0) 
 
-        return round(zero_alpha_prop, 2), round(neg_prop, 2), round(pos_prop, 2), round(np.sum([zero_alpha_prop, pos_prop, neg_prop]), 2)
+        return round(zero_alpha_prop, 4), round(neg_prop, 4), round(pos_prop, 4), round(np.sum([zero_alpha_prop, pos_prop, neg_prop]), 4)
 
 
     def compute_bias(self, t_stats, T):

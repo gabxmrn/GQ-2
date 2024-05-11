@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
-from data import factor, predictive, mutual_fund, common_dates, weighted_portfolio, FUND_RETURN
+from data import factor, predictive, mutual_fund, FUND_RETURN
 from regression import FactorModels
-from graphs import tstat_graph, tstat_graph_by_category, pvalue_histogram
+from graphs import graph_proportions, graph_alphas
 from computations import FDR
 
 
@@ -60,11 +59,10 @@ for name, fund in mutual_fund.groupby('fundname'):
 
 ############################################################ GRAPHIQUES ############################################################
 
-### Graph 1 : 
+    ##### Historiques des répartitions zero-alpha / skilled / unskilled #####
 
 df_alphas, df_p_values = df_alphas_uncondi.copy(), df_p_values_uncondi.copy() # Unconditionnal 4 factors model
 # df_alphas, df_p_values = df_alphas_condi.copy(), df_p_values_condi.copy() # Conditionnal 4 factors model
-
 
 nb_funds_per_year = df_alphas.count(axis=0)
 dict_observed_proportions = {
@@ -73,7 +71,6 @@ dict_observed_proportions = {
     "skilled funds": (df_alphas > 1).sum(axis=0) / nb_funds_per_year
 }
 df_observed_proportions = pd.DataFrame(dict_observed_proportions, index = years_list)
-# print(df_observed_proportions)
 
 proportions_fund_per_year = np.full(shape=(len(years_list), 3), fill_value=any)
 year_i = 0
@@ -86,51 +83,16 @@ for year in years_list :
     year_i += 1
     
 df_calculated_proportions = pd.DataFrame(proportions_fund_per_year, index=years_list, columns=['zero_alpha funds', 'unskilled funds', 'skilled funds'])
-# print(df_calculated_proportions)
-
-
-def graph_proportions(proportions:pd.DataFrame):
-    plt.figure(figsize=(10, 5)) 
-    plt.plot(proportions.index, proportions['zero_alpha funds'], marker='o', label='Zero Alpha Funds')
-    plt.plot(proportions.index, proportions['skilled funds'], marker='o', label='Skilled Funds')
-    plt.plot(proportions.index, proportions['unskilled funds'], marker='o', label='Unskilled Funds')
-
-    plt.title('Number of Funds by Alpha Type Per Year')
-    plt.xlabel('Year')
-    plt.ylabel('Number of Funds')
-    plt.legend()
-    plt.show()
     
 graph_proportions(df_observed_proportions)
 graph_proportions(df_calculated_proportions)
 
-# ### Graph 2 : 
+    ##### Historiques des alphas / nombre de fonds #####
 
 average_alphas_per_year = df_alphas.mean(axis=0)
 
-def graph_alphas(timeline: np.ndarray, alphas: np.ndarray, nb_funds: np.ndarray):
-    # Create a figure and a set of subplots.
-    fig, ax1 = plt.subplots(figsize=(10, 5))
-    
-    # Plotting the alphas with the primary y-axis
-    color = 'tab:red'
-    ax1.set_xlabel('Year')
-    ax1.set_ylabel('Alphas', color=color)
-    ax1.plot(timeline, alphas, marker='o', color=color, label='Alphas')
-    ax1.tick_params(axis='y', labelcolor=color)
-    
-    # Create a second y-axis for the number of funds
-    ax2 = ax1.twinx()
-    color = 'tab:blue'
-    ax2.set_ylabel('Number of Funds', color=color)
-    ax2.plot(timeline, nb_funds, marker='o', color=color, label='Number of Funds')
-    ax2.tick_params(axis='y', labelcolor=color)
-    
-    # Adding a title and a legend
-    plt.title('Alphas and Number of Funds Over Time')
-    fig.tight_layout() 
-    fig.legend(loc='upper right')
-    plt.show()
+graph_alphas(timeline=years_list, alphas=average_alphas_per_year, nb_funds=nb_funds_per_year)
 
-graph_alphas(years_list, average_alphas_per_year, nb_funds_per_year)
 
+
+#### Remarque : les graphs sous modele conditionnel sont très moches.
