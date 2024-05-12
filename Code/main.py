@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data import factor, predictive, mutual_fund, common_dates, weighted_portfolio, FUND_RETURN
+from data_monthly import factor, predictive, mutual_fund, common_dates, weighted_portfolio, FUND_RETURN, FUND_DATE, FUND_NAME
 from regression import FactorModels
 from graphs import tstat_graph, tstat_graph_by_category, pvalue_histogram
 from computations import FDR
@@ -10,7 +10,7 @@ from computations import FDR
 
 ################################################################## REGRESSIONS ##################################################################
 
-nb_funds = len(mutual_fund['fundname'].unique()) # Total number of funds 
+nb_funds = len(mutual_fund[FUND_NAME].unique()) # Total number of funds 
 nb_dates = len(common_dates) # Total number of dates
 print(f"Number of funds : {nb_funds}, Number of dates : {nb_dates}")
 
@@ -19,7 +19,7 @@ fund_index = 0 # Counter for funds
 
 results = np.full((nb_funds, 6), fill_value=np.nan) 
 
-for name, fund in mutual_fund.groupby('fundname'):
+for name, fund in mutual_fund.groupby(FUND_NAME):
     # Dates management : 
     common_dates_fund = set(factor.index).intersection(set(fund.index)).intersection(set(predictive.index))
     common_dates_fund = pd.Index(sorted(list(common_dates_fund)))
@@ -33,12 +33,12 @@ for name, fund in mutual_fund.groupby('fundname'):
     
     # Résults : 
     fund_names[fund_index] = name
-    results[fund_index, 0] = four_factor.params['const']
-    results[fund_index, 1] = four_factor.pvalues['const']
-    results[fund_index, 2] = four_factor.tvalues['const']
-    results[fund_index, 3] = conditional_four_factor.params['const']
-    results[fund_index, 4] = conditional_four_factor.pvalues['const'] 
-    results[fund_index, 5] = conditional_four_factor.tvalues['const'] 
+    results[fund_index, 0] = four_factor.params.get('const',0)
+    results[fund_index, 1] = four_factor.pvalues.get('const',0)
+    results[fund_index, 2] = four_factor.tvalues.get('const',0)
+    results[fund_index, 3] = conditional_four_factor.params.get('const',0)
+    results[fund_index, 4] = conditional_four_factor.pvalues.get('const',0)
+    results[fund_index, 5] = conditional_four_factor.tvalues.get('const',0) 
     fund_index += 1
 
 full_results = pd.DataFrame(results, index=fund_names, columns = ['alpha uncondi', 'pvalues uncondi','t-stat uncondi', 'alpha condi', 'pvalues condi', 't-stat condi'])

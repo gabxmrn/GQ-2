@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from data import factor, predictive, mutual_fund, FUND_RETURN
+from data_monthly import factor, predictive, mutual_fund, FUND_RETURN
 from regression import FactorModels
 from graphs import graph_proportions, graph_alphas
 from computations import FDR
