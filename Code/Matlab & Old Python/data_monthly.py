@@ -17,7 +17,7 @@ FUND_NAME = "fund_name"
 
 # Period selection : 
 startdate = "1980-01"
-enddate = "2006-12"
+enddate = "2023-12"
 
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
@@ -43,7 +43,7 @@ factor = factor.loc[common_dates, :]
 
 # Mutual funds data
 mutual_fund = pd.read_csv("Data/crsp_mutual_funds_1975_2021.csv")
-# mutual_fund = mutual_fund.groupby(FUND_NAME).filter(lambda x: x[FUND_RETURN].notnull().rolling(window=59).count().max() >= 59)
+mutual_fund = mutual_fund.groupby(FUND_NAME).filter(lambda x: x[FUND_RETURN].notnull().count().max() >= 99)
 mutual_fund[FUND_DATE] = pd.to_datetime(mutual_fund[FUND_DATE])
 mutual_fund[FUND_DATE] = mutual_fund[FUND_DATE].apply(lambda x: x.strftime('%Y-%m'))
 mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -51,21 +51,8 @@ mutual_fund.dropna(inplace=True)
 mutual_fund = mutual_fund[mutual_fund[FUND_DATE].isin(common_dates)] # Sames dates as exogeneous variables
 mutual_fund[FUND_RETURN] = mutual_fund[FUND_RETURN] * 100
 mutual_fund = mutual_fund.sort_values(by=[FUND_NAME, FUND_DATE])
+mutual_fund['year'] = mutual_fund[FUND_DATE].str[:4]
 
-# # 60 dates consécutives
-# def has_60_consecutive_months(group):
-#     # Ensure the date column is sorted
-#     group = group.sort_values(FUND_DATE)
-#     expected_next_dates = group[FUND_DATE] + pd.DateOffset(months=1)
-#     actual_next_dates = group[FUND_DATE].shift(-1)
-#     is_consecutive = (actual_next_dates == expected_next_dates).fillna(False)
-    
-#     return is_consecutive.rolling(window=59, min_periods=1).sum().max() >= 59 
-
-# # Group by fund and apply the function
-# mutual_fund[FUND_DATE] = pd.to_datetime(mutual_fund[FUND_DATE])
-# mutual_fund = mutual_fund.groupby(FUND_NAME).filter(has_60_consecutive_months)
-# mutual_fund = mutual_fund.sort_values(by=[FUND_NAME, FUND_DATE])
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 

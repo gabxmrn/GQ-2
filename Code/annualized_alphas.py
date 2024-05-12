@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from data_monthly import factor, predictive, mutual_fund, FUND_RETURN
+from data import factor, predictive, mutual_fund, FUND_RETURN, FUND_NAME, FUND_DATE
 from regression import FactorModels
 from graphs import graph_proportions, graph_alphas
 from computations import FDR
@@ -11,14 +11,14 @@ from computations import FDR
 
 years_list = mutual_fund['year'].unique()
 years_list = np.sort(years_list)
-funds_list = mutual_fund['fundname'].unique()
+funds_list = mutual_fund[FUND_NAME].unique()
 
 df_alphas_uncondi = pd.DataFrame(index=funds_list, columns=years_list)
 df_p_values_uncondi = pd.DataFrame(index=funds_list, columns=years_list)
 # df_alphas_condi = pd.DataFrame(index=funds_list, columns=years_list)
 # df_p_values_condi = pd.DataFrame(index=funds_list, columns=years_list)
 
-for name, fund in mutual_fund.groupby('fundname'):
+for name, fund in mutual_fund.groupby(FUND_NAME):
     # Dates management : 
     common_dates_fund = set(factor.index).intersection(set(fund.index)).intersection(set(predictive.index))
     common_dates_fund = pd.Index(sorted(list(common_dates_fund)))
@@ -32,8 +32,8 @@ for name, fund in mutual_fund.groupby('fundname'):
     # conditional_four_factor = factor_models.conditional_four_factor_model()
     
     # Résults : 
-    df_alphas_uncondi.loc[name, fund_years_list] = four_factor.params['const'] / len(fund_years_list)
-    df_p_values_uncondi.loc[name, fund_years_list] = four_factor.pvalues['const'] # / len(fund_years_list)
+    df_alphas_uncondi.loc[name, fund_years_list] = four_factor.params.get('const',0) / len(fund_years_list)
+    df_p_values_uncondi.loc[name, fund_years_list] = four_factor.pvalues.get('const',0) # / len(fund_years_list)
     # df_alphas_condi.loc[name, fund_years_list] = conditional_four_factor.params['const'] / len(fund_years_list)
     # df_p_values_condi.loc[name, fund_years_list] = conditional_four_factor.pvalues['const'] # / len(fund_years_list)
     

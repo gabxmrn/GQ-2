@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from stationnarization import Stationnarity_Test
 
 FUND_RETURN = "return"
-
+FUND_DATE = "fdate"
+FUND_NAME = "fundname"
 
 ########################################################## DATA IMPORTATION #########################################################
 
@@ -43,17 +44,17 @@ factor = factor.loc[common_dates, :]
 
 # Mutual funds data
 mutual_fund = pd.read_csv("Data/mutual_funds_1975_2023.csv")
-mutual_fund['fdate'] = pd.to_datetime(mutual_fund['fdate'])
-mutual_fund['fdate'] = mutual_fund['fdate'].apply(lambda x: x.strftime('%Y-%m'))
-mutual_fund = mutual_fund[mutual_fund['fdate'].isin(common_dates)] # Sames dates as exogeneous variables
+mutual_fund[FUND_DATE] = pd.to_datetime(mutual_fund[FUND_DATE])
+mutual_fund[FUND_DATE] = mutual_fund[FUND_DATE].apply(lambda x: x.strftime('%Y-%m'))
+mutual_fund = mutual_fund[mutual_fund[FUND_DATE].isin(common_dates)] # Sames dates as exogeneous variables
 mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
 mutual_fund.dropna(inplace=True)
-mutual_fund = mutual_fund.sort_values(by=['fundname', 'fdate'])
-mutual_fund = mutual_fund.groupby('fundname').filter(lambda x: x[FUND_RETURN].notnull().count() >= 20)
-mutual_fund['year'] = mutual_fund['fdate'].str[:4]
+mutual_fund = mutual_fund.sort_values(by=[FUND_NAME, FUND_DATE])
+mutual_fund = mutual_fund.groupby(FUND_NAME).filter(lambda x: x[FUND_RETURN].notnull().count() >= 20)
+mutual_fund['year'] = mutual_fund[FUND_DATE].str[:4]
 
-last_quarter_data = mutual_fund[mutual_fund['fdate'].str.endswith('-12')]
-nb_funds_per_year = last_quarter_data.groupby(last_quarter_data['fdate'].str[:4])['fundname'].nunique()
+last_quarter_data = mutual_fund[mutual_fund[FUND_DATE].str.endswith('-12')]
+nb_funds_per_year = last_quarter_data.groupby(last_quarter_data[FUND_DATE].str[:4])[FUND_NAME].nunique()
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 
@@ -81,8 +82,8 @@ Stationnarity_Test_fund = Stationnarity_Test(mutual_fund, 10, 0.05)
 
 # ######################################################### PORTFOLIO CREATION ########################################################
 
-mutual_fund_returns = mutual_fund.pivot_table(index='fundname', columns='fdate', values=FUND_RETURN, aggfunc='first')
-mutual_fund.set_index('fdate', drop=True, inplace=True)
+mutual_fund_returns = mutual_fund.pivot_table(index=FUND_NAME, columns=FUND_DATE, values=FUND_RETURN, aggfunc='first')
+mutual_fund.set_index(FUND_DATE, drop=True, inplace=True)
 
 nb_funds_per_dates = mutual_fund_returns.notnull().sum()
 weighted_averages = mutual_fund_returns.sum() * (1 / nb_funds_per_dates)

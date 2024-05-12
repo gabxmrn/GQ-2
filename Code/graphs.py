@@ -40,7 +40,7 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     # KDE plot for 'Négatif'
     negative_values = data[data[category] == 'neg'][tstat]
     negative_norm = (negative_values - negative_values.mean()) / negative_values.std()
-    sns.kdeplot(negative_norm + categories['neg'], linestyle='-', label="Unskilled funds", color="black")
+    sns.kdeplot(negative_norm + categories['neg'], linestyle='-.', label="Unskilled funds", color="black")
     
     # KDE plot for 'Null'
     null_values = data[data[category] == 'zero'][tstat]

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_monthly import factor, predictive, mutual_fund, common_dates, weighted_portfolio, FUND_RETURN, FUND_DATE, FUND_NAME
+from data import factor, predictive, mutual_fund, common_dates, weighted_portfolio, FUND_RETURN, FUND_DATE, FUND_NAME
 from regression import FactorModels
 from graphs import tstat_graph, tstat_graph_by_category, pvalue_histogram
 from computations import FDR
@@ -52,6 +52,7 @@ full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos'
 # Four factor model : 
 tstat_graph(full_results, "pvalues uncondi") 
 tstat_graph_by_category(full_results, "pvalues uncondi", "Category uncondi")
+
 pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
 # Conditional four factor model : 
