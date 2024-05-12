@@ -15,7 +15,7 @@ FUND_RETURN = "return"
 """
 
 # Period selection : 
-startdate = "1980-03"
+startdate = "2006-03"
 enddate = "2023-12"
 
 # Full Exogeneous Variables

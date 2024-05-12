@@ -65,11 +65,11 @@ full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos'
 pval_uncondi, alphas_uncondi, t_stat_uncondi = results[:, 1], results[:, 0], results[:, 2]
 pval_condi, alphas_condi, t_stat_condi = results[:, 4], results[:, 3], results[:, 5] 
 
-test_uncondi = FDR(p_values=pval_uncondi, alphas=alphas_uncondi, gamma=0.05, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
+test_uncondi = FDR(p_values=pval_uncondi, alphas=alphas_uncondi, gamma=0.05, lambda_threshold=0.6) # pi0=0.75
 fdr_uncondi = test_uncondi.compute_fdr()
 proportion_uncondi = test_uncondi.compute_proportions(nb_simul=1000)
 
-test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.05, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
+test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.05, lambda_threshold=0.6) # pi0=0.75
 fdr_condi = test_condi.compute_fdr()
 proportion_condi = test_condi.compute_proportions(nb_simul=1000)
 
@@ -78,12 +78,12 @@ print("Results for compute FDR (condi) : ", fdr_condi)
 print("Results for compute proportions (uncondi): ", proportion_uncondi)
 print("Results for compute proportions (condi): ", proportion_condi)
 
-# bias_test_u = test_uncondi.compute_bias(t_stats=t_stat_uncondi, T=nb_dates)
-# print("Results for compute bias (uncondi) : ", bias_test_u)
-# bias_test_c = test_uncondi.compute_bias(t_stats=t_stat_condi, T=nb_dates)
-# print("Results for compute bias (condi) : ", bias_test_c)
-# bias_test_s = test_uncondi.compute_bias_simple(expected_pi0= 0.75)
-# print("Results for compute bias simple (uncondi) : ", bias_test_s)
+bias_test_u = test_uncondi.compute_bias(t_stats=t_stat_uncondi, T=nb_dates)
+print("Results for compute bias (uncondi) : ", bias_test_u)
+bias_test_c = test_uncondi.compute_bias(t_stats=t_stat_condi, T=nb_dates)
+print("Results for compute bias (condi) : ", bias_test_c)
+bias_test_s = test_uncondi.compute_bias_simple(expected_pi0= 0.75)
+print("Results for compute bias simple (uncondi) : ", bias_test_s)
 
 #################################################################### TABLEAU ####################################################################
 
@@ -100,29 +100,17 @@ def table_impact_of_luck(regression:pd.DataFrame, significance_levels:list, mode
 
         results.append({
             'Signif. Level (γ)': gamma,
-            'Signif. S₊ (%)': fdr_positive*100, # Pas de formule explicite = fdr ?? 
+            'Signif. S₊ (%)': fdr_positive*100, # FDR
             'Signif. S₋ (%)': fdr_negative*100, 
-            'Lucky F₊ (%)': positive_prop*100, # F = pi0 - gamma/2 = prop ???? 
+            'Lucky F₊ (%)': positive_prop*100, # F = pi0 - gamma/2 = Proportions 
             'Unlucky F₋ (%)': negative_prop*100, 
-            'Skilled T₊ (%)': (fdr_positive - positive_prop)*100, # T = S - F # 
+            'Skilled T₊ (%)': (fdr_positive - positive_prop)*100, # T = S - F
             'Unskilled T₋ (%)': (fdr_negative - negative_prop)*100
         })
-        
-        ### Version chachou : 
-        # results.append({
-        #     'Signif. Level (γ)': gamma,
-        #     'Signif. S₊ (%)': positive_prop * 100,
-        #     'Signif. S₋ (%)': negative_prop * 100,
-        #     'Lucky F₊ (%)': fdr_positive * 100, 
-        #     'Unlucky F₋ (%)': fdr_negative * 100,
-        #     'Skilled T₊ (%)': (positive_prop - zero_alpha_prop) * 100, 
-        #     'Unskilled T₋ (%)': (negative_prop - zero_alpha_prop) * 100
-        # })
-
     return pd.DataFrame(results).T
 
 significance_levels = [0.05, 0.10, 0.15, 0.20]
-
+pval_uncondi, alphas_uncondi, t_stat_uncondi = results[:, 1], results[:, 0], results[:, 2]
 impact_of_luck_uncondi = table_impact_of_luck(regression=full_results, 
                                               significance_levels=significance_levels, 
                                               model="uncondi", 
@@ -136,8 +124,6 @@ print(impact_of_luck_uncondi)
 #                                             lambda_treshold=0.6, 
 #                                             nb_simul=1000)
 # print(impact_of_luck_condi)
-
-### CA ME REND FOLLE J'AI ENCORE DES RESULTATS QUI DECONNE JE CAPTE PAS POURQUOI 
 
 
 

@@ -43,7 +43,7 @@ class FactorModels:
         # cov_type='HAC',cov_kwds={'maxlags':1}
         # -> Dit dans l'article mais renvoie des résultats un peu plus louches (graphiquement)
         # "To compute each fund t-statistic, we use the Newey and West (1987) heteroskedasticity and autocorrelation consistent estimator of the standard deviation"
-        return sm.OLS(y, X).fit() # Linear Regression OLS
+        return sm.OLS(y, X).fit(cov_type='HAC',cov_kwds={'maxlags':1}) # Linear Regression OLS
     
     def conditional_four_factor_model(self):   
         """
@@ -66,7 +66,7 @@ class FactorModels:
                 
         X = sm.add_constant(X) # Add a constant term for the intercept (alpha)
 
-        return sm.OLS(y, X).fit() # Linear Regression OLS
+        return sm.OLS(y, X).fit(cov_type='HAC',cov_kwds={'maxlags':1}) # Linear Regression OLS
     
     
     

@@ -138,7 +138,7 @@ class FDR:
         # Compute delta(lambda)
         delta_lambda = F_nc / (1 - self.lambda_threshold)
 
-        return delta_lambda
+        return round(delta_lambda, 2)
     
     
     def compute_bias_simple(self, expected_pi0):
@@ -155,5 +155,5 @@ class FDR:
         _, neg_prop, pos_prop, _ = self.compute_proportions(nb_simul=1000)
         delta_lambda = ((neg_prop + pos_prop) - E_pi_alpha) / (neg_prop + pos_prop)
  
-        return delta_lambda
+        return round(delta_lambda, 2)
 
