@@ -43,6 +43,7 @@ factor = factor.loc[common_dates, :]
 
 # Mutual funds data
 mutual_fund = pd.read_csv("Data/crsp_mutual_funds_1975_2021.csv")
+# mutual_fund = mutual_fund.groupby(FUND_NAME).filter(lambda x: x[FUND_RETURN].notnull().rolling(window=59).count().max() >= 59)
 mutual_fund[FUND_DATE] = pd.to_datetime(mutual_fund[FUND_DATE])
 mutual_fund[FUND_DATE] = mutual_fund[FUND_DATE].apply(lambda x: x.strftime('%Y-%m'))
 mutual_fund.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -51,7 +52,7 @@ mutual_fund = mutual_fund[mutual_fund[FUND_DATE].isin(common_dates)] # Sames dat
 mutual_fund[FUND_RETURN] = mutual_fund[FUND_RETURN] * 100
 mutual_fund = mutual_fund.sort_values(by=[FUND_NAME, FUND_DATE])
 
-# 60 dates consécutives
+# # 60 dates consécutives
 # def has_60_consecutive_months(group):
 #     # Ensure the date column is sorted
 #     group = group.sort_values(FUND_DATE)
@@ -64,6 +65,7 @@ mutual_fund = mutual_fund.sort_values(by=[FUND_NAME, FUND_DATE])
 # # Group by fund and apply the function
 # mutual_fund[FUND_DATE] = pd.to_datetime(mutual_fund[FUND_DATE])
 # mutual_fund = mutual_fund.groupby(FUND_NAME).filter(has_60_consecutive_months)
+# mutual_fund = mutual_fund.sort_values(by=[FUND_NAME, FUND_DATE])
 
 ####################################################### DATA STATIONNARIZATION ######################################################
 

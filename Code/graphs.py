@@ -40,12 +40,12 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     # KDE plot for 'Négatif'
     negative_values = data[data[category] == 'neg'][tstat]
     negative_norm = (negative_values - negative_values.mean()) / negative_values.std()
-    sns.kdeplot(negative_norm + categories['neg'], label="Unskilled funds", color="tomato")
+    sns.kdeplot(negative_norm + categories['neg'], linestyle='-', label="Unskilled funds", color="black")
     
     # KDE plot for 'Null'
     null_values = data[data[category] == 'zero'][tstat]
     null_norm = (null_values - null_values.mean()) / null_values.std()
-    kde_null = sns.kdeplot(null_norm + categories['zero'], label="Zero-alpha funds", color="slategrey")
+    kde_null = sns.kdeplot(null_norm + categories['zero'], label="Zero-alpha funds", color="black")
     kde_null_fill = kde_null.get_lines()[-1]
     plt.fill_between(kde_null_fill.get_xdata(), kde_null_fill.get_ydata(), 
                      where=(kde_null_fill.get_xdata() < -1.65) | (kde_null_fill.get_xdata() > 1.65), color="lightgray", alpha=0.5)
@@ -53,7 +53,7 @@ def tstat_graph_by_category(data: pd.DataFrame, tstat: str, category: str):
     # KDE plot for 'Positif'
     positive_values = data[data[category] == 'pos'][tstat]
     positive_norm = (positive_values - positive_values.mean()) / positive_values.std()
-    sns.kdeplot(positive_norm + categories['pos'], label="Skilled funds", color="royalblue")
+    sns.kdeplot(positive_norm + categories['pos'], linestyle='--', label="Skilled funds", color="black")
     
     plt.title("Individual fund t-statistics distribution")
     plt.xlabel("t-statistic")

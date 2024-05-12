@@ -49,15 +49,15 @@ full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos'
 
 #################################################################### GRAPHS #####################################################################
 
-# # Four factor model : 
-# tstat_graph(full_results, "pvalues uncondi") 
-# tstat_graph_by_category(full_results, "pvalues uncondi", "Category uncondi")
-# pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
+# Four factor model : 
+tstat_graph(full_results, "pvalues uncondi") 
+tstat_graph_by_category(full_results, "pvalues uncondi", "Category uncondi")
+pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
-# # Conditional four factor model : 
-# tstat_graph(full_results, "pvalues condi") 
-# tstat_graph_by_category(full_results, "pvalues condi", "Category condi")
-# pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
+# Conditional four factor model : 
+tstat_graph(full_results, "pvalues condi") 
+tstat_graph_by_category(full_results, "pvalues condi", "Category condi")
+pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
 
 ###################################################################### FDR ######################################################################
