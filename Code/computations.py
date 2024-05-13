@@ -37,7 +37,7 @@ class FDR:
         
         W = self.p_values[self.p_values > self.lambda_threshold] # number of zero-alpha_funds
         pi0 = len(W) / len(self.p_values) / (1.0 - self.lambda_threshold)
-        return pi0
+        return np.clip(pi0, 0, 1)
 
     def compute_fdr(self):        
         """
@@ -85,24 +85,30 @@ class FDR:
         nb_test = len(treshold_test)  
       
         # Calculate proportion of null hypothesis (p-values >= threshold) for each threshold
-        null_proportion = np.zeros(nb_test)
-        for i in range(nb_test):
-            nb_zero_alpha = np.sum(self.p_values >= treshold_test[i])  
-            null_proportion[i] = (nb_zero_alpha / nb_funds) / (1 - treshold_test[i])  
-        min_null_prop = np.min(null_proportion) 
+        # null_proportion = np.zeros(nb_test)
+        # for i in range(nb_test):
+        #     nb_zero_alpha = np.sum(self.p_values >= treshold_test[i])  
+        #     null_proportion[i] = (nb_zero_alpha / nb_funds) / (1 - treshold_test[i])  
+        # min_null_prop = np.min(null_proportion) 
         
-        # Perform bootstrap simulations and calculate proportion of null hypothesis for each threshold
-        null_proportion_boot = np.zeros((nb_test, nb_simul)) 
-        for j in range(nb_simul):
-            p_values_sample = np.random.choice(self.p_values, size=nb_funds, replace=True) 
-            for i in range(nb_test):
-                nb_zero_alpha_boot = np.sum(p_values_sample >= treshold_test[i]) 
-                null_proportion_boot[i, j] = nb_zero_alpha_boot / ((1 - treshold_test[i]) * nb_funds)
+        # # Perform bootstrap simulations and calculate proportion of null hypothesis for each threshold
+        # null_proportion_boot = np.zeros((nb_test, nb_simul)) 
+        # for j in range(nb_simul):
+        #     p_values_sample = np.random.choice(self.p_values, size=nb_funds, replace=True) 
+        #     for i in range(nb_test):
+        #         nb_zero_alpha_boot = np.sum(p_values_sample >= treshold_test[i]) 
+        #         null_proportion_boot[i, j] = nb_zero_alpha_boot / ((1 - treshold_test[i]) * nb_funds)
 
-        mse = np.mean(np.square(null_proportion_boot - min_null_prop), axis=1)  
-        index = np.argmin(mse) 
-        optimal_threshold = treshold_test[index]  # Optimal threshold based on MSE
-        zero_alpha_prop = null_proportion[index]  
+        # mse = np.mean(np.square(null_proportion_boot - min_null_prop), axis=1)  
+        # index = np.argmin(mse) 
+        # optimal_threshold = treshold_test[index]  # Optimal threshold based on MSE
+        # zero_alpha_prop = null_proportion[index] # Prop alpha-zero based on MSE 
+        
+        # Calculate zero-alpha proportion without bootstrapinf for results table : 
+        nb_zero_alpha = np.sum(self.p_values >= self.gamma)  
+        zero_alpha_prop = (nb_zero_alpha / nb_funds) / (1 - self.gamma)  
+        optimal_threshold = self.gamma
+        
         zero_alpha_prop = np.clip(zero_alpha_prop, 0, 1) 
 
         # Calculate proportions of significant negative alphas using optimal threshold
@@ -118,6 +124,24 @@ class FDR:
         return round(zero_alpha_prop, 4), round(neg_prop, 4), round(pos_prop, 4), round(np.sum([zero_alpha_prop, pos_prop, neg_prop]), 4)
 
 
+    def compute_average_alphas_by_category(self) :        
+        """
+        Calculates the average alpha values for skilled and unskilled funds based on both alpha values and p-values.
+        A skilled fund is defined as having a positive alpha and a p-value less than the significance level (gamma).
+        An unskilled fund is defined as having a negative alpha and a p-value less than the significance level (gamma).
+
+        Returns:
+            tuple: Contain the average alphas for 'unskilled' and 'skilled' funds categories.
+        """
+        unskilled_mask = (self.alphas < 0) & (self.p_values < self.gamma)
+        skilled_mask = (self.alphas > 0) & (self.p_values < self.gamma)
+
+        unskilled_mean_alpha = np.mean(self.alphas[unskilled_mask]) if self.alphas[unskilled_mask].size > 0 else 0
+        skilled_mean_alpha = np.mean(self.alphas[skilled_mask]) if self.alphas[skilled_mask].size > 0 else 0
+
+        return round(unskilled_mean_alpha, 4), round(skilled_mean_alpha, 4)
+
+      
     def compute_bias(self, t_stats, T):
         """
         Calculate the delta(lambda) from t-statistics using noncentral t-distribution.

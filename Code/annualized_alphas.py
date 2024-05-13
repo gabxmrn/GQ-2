@@ -59,40 +59,57 @@ for name, fund in mutual_fund.groupby(FUND_NAME):
 
 ############################################################ GRAPHIQUES ############################################################
 
-    ##### Historiques des répartitions zero-alpha / skilled / unskilled #####
+#     ##### Historiques des répartitions zero-alpha / skilled / unskilled #####
 
-df_alphas, df_p_values = df_alphas_uncondi.copy(), df_p_values_uncondi.copy() # Unconditionnal 4 factors model
-# df_alphas, df_p_values = df_alphas_condi.copy(), df_p_values_condi.copy() # Conditionnal 4 factors model
+# df_alphas, df_p_values = df_alphas_uncondi.copy(), df_p_values_uncondi.copy() # Unconditionnal 4 factors model
+# # df_alphas, df_p_values = df_alphas_condi.copy(), df_p_values_condi.copy() # Conditionnal 4 factors model
 
-nb_funds_per_year = df_alphas.count(axis=0)
-dict_observed_proportions = {
-    "zero_alpha funds": ((df_alphas > -1) & (df_alphas < 1)).sum(axis=0) / nb_funds_per_year, 
-    "unskilled funds": (df_alphas < -1).sum(axis=0) / nb_funds_per_year, 
-    "skilled funds": (df_alphas > 1).sum(axis=0) / nb_funds_per_year
-}
-df_observed_proportions = pd.DataFrame(dict_observed_proportions, index = years_list)
+# nb_funds_per_year = df_alphas.count(axis=0)
+# dict_observed_proportions = {
+#     "zero_alpha funds": ((df_alphas > -1) & (df_alphas < 1)).sum(axis=0) / nb_funds_per_year, 
+#     "unskilled funds": (df_alphas < -1).sum(axis=0) / nb_funds_per_year, 
+#     "skilled funds": (df_alphas > 1).sum(axis=0) / nb_funds_per_year
+# }
+# df_observed_proportions = pd.DataFrame(dict_observed_proportions, index = years_list)
 
-proportions_fund_per_year = np.full(shape=(len(years_list), 3), fill_value=any)
-year_i = 0
-for year in years_list :
-    FDR_year = FDR(p_values=df_p_values[year], alphas=df_alphas[year], gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
-    proportions = FDR_year.compute_proportions(nb_simul=100)
-    proportions_fund_per_year[year_i, 0] = proportions[0]
-    proportions_fund_per_year[year_i, 1] = proportions[1]
-    proportions_fund_per_year[year_i, 2] = proportions[2]
-    year_i += 1
+# proportions_fund_per_year = np.full(shape=(len(years_list), 3), fill_value=any)
+# year_i = 0
+# for year in years_list :
+#     FDR_year = FDR(p_values=df_p_values[year], alphas=df_alphas[year], gamma=0.5, lambda_threshold=0.6, pi0=0.75) # pi0=0.75
+#     proportions = FDR_year.compute_proportions(nb_simul=100)
+#     proportions_fund_per_year[year_i, 0] = proportions[0]
+#     proportions_fund_per_year[year_i, 1] = proportions[1]
+#     proportions_fund_per_year[year_i, 2] = proportions[2]
+#     year_i += 1
     
-df_calculated_proportions = pd.DataFrame(proportions_fund_per_year, index=years_list, columns=['zero_alpha funds', 'unskilled funds', 'skilled funds'])
+# df_calculated_proportions = pd.DataFrame(proportions_fund_per_year, index=years_list, columns=['zero_alpha funds', 'unskilled funds', 'skilled funds'])
     
-graph_proportions(df_observed_proportions)
-graph_proportions(df_calculated_proportions)
+# graph_proportions(df_observed_proportions)
+# graph_proportions(df_calculated_proportions)
 
-    ##### Historiques des alphas / nombre de fonds #####
+#     ##### Historiques des alphas / nombre de fonds #####
 
-average_alphas_per_year = df_alphas.mean(axis=0)
+# average_alphas_per_year = df_alphas.mean(axis=0)
 
-graph_alphas(timeline=years_list, alphas=average_alphas_per_year, nb_funds=nb_funds_per_year)
+# graph_alphas(timeline=years_list, alphas=average_alphas_per_year, nb_funds=nb_funds_per_year)
 
 
+################################################### ALPHA MOYENS PAR CATEGORIES ####################################################
 
-#### Remarque : les graphs sous modele conditionnel sont très moches.
+# df_alphas, df_p_values = df_alphas_uncondi.copy(), df_p_values_uncondi.copy() # Unconditionnal 4 factors model
+# # df_alphas, df_p_values = df_alphas_condi.copy(), df_p_values_condi.copy() # Conditionnal 4 factors model
+
+# df_average_alphas_by_category = pd.DataFrame(index=years_list, columns=['Unskilled', 'Skilled'])
+
+# for year in years_list:
+#     alphas_this_year = df_alphas[year]
+    
+#     # Average for unskilled funds :
+#     unskilled_mean_alpha = alphas_this_year[alphas_this_year < 0].mean()
+#     df_average_alphas_by_category.loc[year, 'Unskilled'] = unskilled_mean_alpha
+
+#     # Average for skilled funds :
+#     skilled_mean_alpha = alphas_this_year[alphas_this_year > 0].mean()
+#     df_average_alphas_by_category.loc[year, 'Skilled'] = skilled_mean_alpha
+
+# print(df_average_alphas_by_category)

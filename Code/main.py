@@ -46,19 +46,23 @@ full_results = pd.DataFrame(results, index=fund_names, columns = ['alpha uncondi
 full_results['Category uncondi'] = np.where(full_results['alpha uncondi'] > 1, 'pos', np.where(full_results['alpha uncondi'] < -1, 'neg', 'zero'))
 full_results['Category condi'] = np.where(full_results['alpha condi'] > 1, 'pos', np.where(full_results['alpha condi'] < -1, 'neg', 'zero'))
 
+print(f"Prop zero alphas = {len(full_results[full_results['Category uncondi'] == 'zero']) / full_results.shape[0]}, number = {len(full_results[full_results['Category uncondi'] == 'zero'])}")
+print(f"Prop negatives alphas = {len(full_results[full_results['Category uncondi'] == 'neg']) / full_results.shape[0]}, number = {len(full_results[full_results['Category uncondi'] == 'neg'])}")
+print(f"Prop positives alphas = {len(full_results[full_results['Category uncondi'] == 'pos']) / full_results.shape[0]}, number = {len(full_results[full_results['Category uncondi'] == 'pos'])}")
+
 
 #################################################################### GRAPHS #####################################################################
 
-# Four factor model : 
-tstat_graph(full_results, "pvalues uncondi") 
-tstat_graph_by_category(full_results, "pvalues uncondi", "Category uncondi")
+# # Four factor model : 
+# tstat_graph(full_results, "pvalues uncondi") 
+# tstat_graph_by_category(full_results, "pvalues uncondi", "Category uncondi")
 
-pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
+# pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
-# Conditional four factor model : 
-tstat_graph(full_results, "pvalues condi") 
-tstat_graph_by_category(full_results, "pvalues condi", "Category condi")
-pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
+# # Conditional four factor model : 
+# tstat_graph(full_results, "pvalues condi") 
+# tstat_graph_by_category(full_results, "pvalues condi", "Category condi")
+# pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
 
 ###################################################################### FDR ######################################################################
@@ -66,25 +70,25 @@ pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -
 pval_uncondi, alphas_uncondi, t_stat_uncondi = results[:, 1], results[:, 0], results[:, 2]
 pval_condi, alphas_condi, t_stat_condi = results[:, 4], results[:, 3], results[:, 5] 
 
-test_uncondi = FDR(p_values=pval_uncondi, alphas=alphas_uncondi, gamma=0.05, lambda_threshold=0.6) # pi0=0.75
-fdr_uncondi = test_uncondi.compute_fdr()
-proportion_uncondi = test_uncondi.compute_proportions(nb_simul=1000)
+# test_uncondi = FDR(p_values=pval_uncondi, alphas=alphas_uncondi, gamma=0.05, lambda_threshold=0.6) # pi0=0.75
+# fdr_uncondi = test_uncondi.compute_fdr()
+# proportion_uncondi = test_uncondi.compute_proportions(nb_simul=1000)
 
-test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.05, lambda_threshold=0.6) # pi0=0.75
-fdr_condi = test_condi.compute_fdr()
-proportion_condi = test_condi.compute_proportions(nb_simul=1000)
+# test_condi = FDR(p_values=pval_condi, alphas=alphas_condi, gamma=0.05, lambda_threshold=0.6) # pi0=0.75
+# fdr_condi = test_condi.compute_fdr()
+# proportion_condi = test_condi.compute_proportions(nb_simul=1000)
 
-print("Results for compute FDR (uncondi) : ", fdr_uncondi)
-print("Results for compute FDR (condi) : ", fdr_condi)
-print("Results for compute proportions (uncondi): ", proportion_uncondi)
-print("Results for compute proportions (condi): ", proportion_condi)
+# print("Results for compute FDR (uncondi) : ", fdr_uncondi)
+# print("Results for compute FDR (condi) : ", fdr_condi)
+# print("Results for compute proportions (uncondi): ", proportion_uncondi)
+# print("Results for compute proportions (condi): ", proportion_condi)
 
-bias_test_u = test_uncondi.compute_bias(t_stats=t_stat_uncondi, T=nb_dates)
-print("Results for compute bias (uncondi) : ", bias_test_u)
-bias_test_c = test_uncondi.compute_bias(t_stats=t_stat_condi, T=nb_dates)
-print("Results for compute bias (condi) : ", bias_test_c)
-bias_test_s = test_uncondi.compute_bias_simple(expected_pi0= 0.75)
-print("Results for compute bias simple (uncondi) : ", bias_test_s)
+# bias_test_u = test_uncondi.compute_bias(t_stats=t_stat_uncondi, T=nb_dates)
+# print("Results for compute bias (uncondi) : ", bias_test_u)
+# bias_test_c = test_uncondi.compute_bias(t_stats=t_stat_condi, T=nb_dates)
+# print("Results for compute bias (condi) : ", bias_test_c)
+# bias_test_s = test_uncondi.compute_bias_simple(expected_pi0= 0.75)
+# print("Results for compute bias simple (uncondi) : ", bias_test_s)
 
 #################################################################### TABLEAU ####################################################################
 
@@ -98,6 +102,7 @@ def table_impact_of_luck(regression:pd.DataFrame, significance_levels:list, mode
 
         fdr_overall, fdr_negative, fdr_positive = fdr_instance.compute_fdr()
         zero_alpha_prop, negative_prop, positive_prop, total_prop = fdr_instance.compute_proportions(nb_simul=nb_simul)
+        mean_negatives_alphas, mean_positives_alphas = fdr_instance.compute_average_alphas_by_category()
 
         results.append({
             'Signif. Level (γ)': gamma,
@@ -106,7 +111,9 @@ def table_impact_of_luck(regression:pd.DataFrame, significance_levels:list, mode
             'Lucky F₊ (%)': positive_prop*100, # F = pi0 - gamma/2 = Proportions 
             'Unlucky F₋ (%)': negative_prop*100, 
             'Skilled T₊ (%)': (fdr_positive - positive_prop)*100, # T = S - F
-            'Unskilled T₋ (%)': (fdr_negative - negative_prop)*100
+            'Unskilled T₋ (%)': (fdr_negative - negative_prop)*100, 
+            'Mean negatives alphas' : mean_negatives_alphas, 
+            'Mean positives alphas' : mean_positives_alphas
         })
     return pd.DataFrame(results).T
 
@@ -116,7 +123,8 @@ impact_of_luck_uncondi = table_impact_of_luck(regression=full_results,
                                               significance_levels=significance_levels, 
                                               model="uncondi", 
                                               lambda_treshold=0.6, 
-                                              nb_simul=1000)
+                                              nb_simul=1000,
+                                              pi0=0.75) #pi0=0.2
 print(impact_of_luck_uncondi)
 
 # impact_of_luck_condi = table_impact_of_luck(regression=full_results, 
