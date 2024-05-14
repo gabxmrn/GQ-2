@@ -54,13 +54,13 @@ print(f"Prop positives alphas = {round(len(full_results[full_results['Category u
 #################################################################### GRAPHS #####################################################################
 
 # Four factor model : 
-tstat_graph(full_results, "pvalues uncondi") 
-tstat_graph_by_category(full_results, "pvalues uncondi", "Category uncondi")
+tstat_graph(full_results, "t-stat uncondi") 
+tstat_graph_by_category(full_results, "t-stat uncondi", "Category uncondi")
 pvalue_histogram(full_results['Category uncondi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
 # # Conditional four factor model : 
-# tstat_graph(full_results, "pvalues condi") 
-# tstat_graph_by_category(full_results, "pvalues condi", "Category condi")
+# tstat_graph(full_results, "t-stat condi") 
+# tstat_graph_by_category(full_results, "t-stat condi", "Category condi")
 # pvalue_histogram(full_results['Category condi'].value_counts() / nb_funds, [0, -2.5, 3], 1, nb_funds)
 
 

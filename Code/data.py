@@ -17,7 +17,7 @@ FUND_NAME = "fundname"
 
 # Period selection : 
 startdate = "1980-03"
-enddate = "2006-12"
+enddate = "2023-12"
 
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
