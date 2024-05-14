@@ -56,13 +56,11 @@ class FDR:
         # Compute for the negative side
         neg_p_values = self.p_values[self.alphas < 0]
         negatives_prop = np.sum(neg_p_values < self.gamma) / len(neg_p_values) if len(neg_p_values) > 0 else 0
-        # negatives_prop = np.sum(neg_p_values < self.gamma) / significant_prop if significant_prop > 0 else 0
         fdr_neg = (expected_false_positives / negatives_prop) if negatives_prop > 0 else 0
         
         # Compute for the positive side
         pos_p_values = self.p_values[self.alphas > 0]
         positives_prop = np.sum(pos_p_values < self.gamma) / len(pos_p_values) if len(pos_p_values) > 0 else 0
-        # positives_prop = np.sum(pos_p_values < self.gamma) / significant_prop if significant_prop > 0 else 0
         fdr_pos = (expected_false_positives / positives_prop) if positives_prop > 0 else 0
 
         return round(fdr, 4), round(fdr_neg, 4), round(fdr_pos, 4)
@@ -107,17 +105,18 @@ class FDR:
         # Calculate zero-alpha proportion without bootstrapinf for results table : 
         nb_zero_alpha = np.sum(self.p_values >= self.gamma)  
         zero_alpha_prop = (nb_zero_alpha / nb_funds) / (1 - self.gamma)  
+        # zero_alpha_prop = (nb_zero_alpha / nb_funds) / (1 - self.lambda_threshold) 
         optimal_threshold = self.gamma
         
         zero_alpha_prop = np.clip(zero_alpha_prop, 0, 1) 
 
         # Calculate proportions of significant negative alphas using optimal threshold
-        neg_p_values = self.p_values[self.alphas < 0] 
+        neg_p_values = self.p_values[self.alphas < 0] # 0
         neg_prop = np.sum(neg_p_values < optimal_threshold) / nb_funds 
         neg_prop = max(neg_prop - zero_alpha_prop * optimal_threshold / 2, 0)  
         
         # Calculate proportions of significant positive alphas using optimal threshold
-        pos_p_values = self.p_values[self.alphas > 0] 
+        pos_p_values = self.p_values[self.alphas > 0] # 0
         pos_prop = np.sum(pos_p_values < optimal_threshold) / nb_funds 
         pos_prop = max(pos_prop - zero_alpha_prop * optimal_threshold / 2, 0) 
 

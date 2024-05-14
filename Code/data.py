@@ -16,8 +16,8 @@ FUND_NAME = "fundname"
 """
 
 # Period selection : 
-startdate = "2006-03"
-enddate = "2023-12"
+startdate = "1980-03"
+enddate = "2006-12"
 
 # Full Exogeneous Variables
 exogeneous_variables = pd.read_excel("Data/exogeneous_variables.xlsx", index_col='Dates')
@@ -60,24 +60,31 @@ nb_funds_per_year = last_quarter_data.groupby(last_quarter_data[FUND_DATE].str[:
 
 Stationnarity_Test_factor = Stationnarity_Test(factor, 10, 0.05) 
 # print(Stationnarity_Test_factor.isStationnary)
-# Non-stationnary -> rf_rate, mom
 factor = Stationnarity_Test_factor.get_stationnarized_data()
-Stationnarity_Test_factor = Stationnarity_Test(factor, 10, 0.05) 
+# Stationnarity_Test_factor = Stationnarity_Test(factor, 10, 0.05) 
 # print(Stationnarity_Test_factor.isStationnary)
 # print(Stationnarity_Test_factor.get_results())
+# print(Stationnarity_Test_factor.kpss_check())
 
 Stationnarity_Test_predictive = Stationnarity_Test(predictive, 10, 0.05) 
 # print(Stationnarity_Test_predictive.isStationnary)
-# Non-stationnary -> 1M_Tbill_yield,  div_yield_mkt_ptf,  default_spread
 predictive = Stationnarity_Test_predictive.get_stationnarized_data() 
-Stationnarity_Test_predictive = Stationnarity_Test(predictive, 10, 0.05) 
+# Stationnarity_Test_predictive = Stationnarity_Test(predictive, 10, 0.05) 
 # print(Stationnarity_Test_predictive.isStationnary)
 # print(Stationnarity_Test_predictive.get_results())
+# print(Stationnarity_Test_predictive.kpss_check())
 
-Stationnarity_Test_fund = Stationnarity_Test(mutual_fund, 10, 0.05) 
-# print(Stationnarity_Test_fund.isStationnary)
-# Non-stationnary -> none 
-# print(Stationnarity_Test_fund.get_results())
+list_stationnary_funds_df = []
+for name, fund in mutual_fund.groupby(FUND_NAME): 
+    if len(fund) < 2 : 
+        continue       
+    Stationnarity_Test_fund = Stationnarity_Test(fund, 2, 0.05)
+    if Stationnarity_Test_fund.isStationnary.loc['isStationnary', FUND_RETURN]:
+        list_stationnary_funds_df.append(fund)
+    else:
+        new_fund = Stationnarity_Test_fund.get_stationnarized_data()
+        list_stationnary_funds_df.append(new_fund)
+mutual_fund = pd.concat(list_stationnary_funds_df, ignore_index=True)
 
 
 # ######################################################### PORTFOLIO CREATION ########################################################

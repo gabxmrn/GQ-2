@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller, kpss
+import warnings
+warnings.filterwarnings('ignore') 
 
 
 class Stationnarity_Test:
@@ -46,7 +48,6 @@ class Stationnarity_Test:
         for col in self.df.columns:
             if self.df[col].dtype == "object" :
                 continue
-        #     print(self.df[col].dtype)
             self._sequential_strategy(self.df[col])
 
 
@@ -57,17 +58,24 @@ class Stationnarity_Test:
         return pd.concat([self.stationnarity, self.trend, self.constant], axis=0)
 
 
-    def get_stationnarized_data(self) -> pd.DataFrame :
+    def get_stationnarized_data(self, forced_stationnarity:list=None) -> pd.DataFrame :
         """
         Returns a stationarized version of the time series.
 
-        Outputs :
-            - DataFrame, stationarized version of the time series.
+        Parameters:
+            forced_stationarity (list, optional): List of column names to force stationarity on.
+
+        Outputs:
+            DataFrame: Stationarized version of the time series.
         """
         
         results = pd.DataFrame(index=self.df.index[1:])
         for col in self.df.columns:
-            if not self.isStationnary[col].iloc[0]:
+            if col not in self.isStationnary.columns:
+                results[col] = self.df[col].iloc[1:]
+            elif not self.isStationnary[col].iloc[0] :
+                results[col] = np.diff(self.df[col])
+            elif not forced_stationnarity is None and col in forced_stationnarity :
                 results[col] = np.diff(self.df[col])
             else:
                 results[col] = self.df[col].iloc[1:]
@@ -166,6 +174,9 @@ class Stationnarity_Test:
         """
         results = []
         for col in self.df.columns:
+            if self.df[col].dtype == "object" :
+                results.append(np.nan)
+                continue
             kpss_result = kpss(self.df[col])
-            results.append(kpss_result.iloc[1] >= self.threshold)
+            results.append(kpss_result[1] >= self.threshold)
         return pd.DataFrame([results], columns=self.df.columns, index=['KPSS test'])
